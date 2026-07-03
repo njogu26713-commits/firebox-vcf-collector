@@ -5,13 +5,16 @@
  * Firebox VCF Creator API
  * OpenAPI spec version: 0.1.0
  */
+import type { CampaignPublicStatus } from './campaignPublicStatus';
 
-export interface CampaignAnalytics {
+export interface CampaignPublic {
   id: string;
   title: string;
-  status: string;
+  /** @nullable */
+  description?: string | null;
+  status: CampaignPublicStatus;
   targetContacts: number;
   contactsCollected: number;
+  remainingContacts: number;
   progressPercent: number;
-  createdAt: Date;
 }

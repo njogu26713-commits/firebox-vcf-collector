@@ -10,6 +10,8 @@ export * from './campaign';
 export * from './campaignAnalytics';
 export * from './campaignInput';
 export * from './campaignInputStatus';
+export * from './campaignPublic';
+export * from './campaignPublicStatus';
 export * from './campaignStatus';
 export * from './campaignUpdate';
 export * from './campaignUpdateStatus';

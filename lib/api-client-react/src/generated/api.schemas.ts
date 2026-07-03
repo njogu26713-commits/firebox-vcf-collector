@@ -19,7 +19,7 @@ export const CampaignStatus = {
 } as const;
 
 export interface Campaign {
-  id: number;
+  id: string;
   title: string;
   /** @nullable */
   description?: string | null;
@@ -72,11 +72,11 @@ export interface CampaignUpdate {
 }
 
 export interface Contact {
-  id: number;
-  campaignId: number;
+  id: string;
+  campaignId: string;
   name: string;
   phone: string;
-  submittedAt: string;
+  submittedAt?: string;
 }
 
 export interface ContactInput {
@@ -96,8 +96,29 @@ export interface DashboardStats {
   downloadedVcfs: number;
 }
 
+export type CampaignPublicStatus = typeof CampaignPublicStatus[keyof typeof CampaignPublicStatus];
+
+
+export const CampaignPublicStatus = {
+  draft: 'draft',
+  active: 'active',
+  completed: 'completed',
+} as const;
+
+export interface CampaignPublic {
+  id: string;
+  title: string;
+  /** @nullable */
+  description?: string | null;
+  status: CampaignPublicStatus;
+  targetContacts: number;
+  contactsCollected: number;
+  remainingContacts: number;
+  progressPercent: number;
+}
+
 export interface CampaignAnalytics {
-  id: number;
+  id: string;
   title: string;
   status: string;
   targetContacts: number;

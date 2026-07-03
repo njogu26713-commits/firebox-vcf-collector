@@ -7,9 +7,9 @@
  */
 
 export interface Contact {
-  id: number;
-  campaignId: number;
+  id: string;
+  campaignId: string;
   name: string;
   phone: string;
-  submittedAt: Date;
+  submittedAt?: Date;
 }

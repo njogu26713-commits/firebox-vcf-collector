@@ -75,7 +75,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "200":
           description: Campaign found
@@ -94,7 +94,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       requestBody:
         required: true
         content:
@@ -119,7 +119,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "204":
           description: Deleted
@@ -136,7 +136,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "200":
           description: VCF file content
@@ -180,7 +180,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         "200":
           description: Contact list
@@ -199,7 +199,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       requestBody:
         required: true
         content:
@@ -270,7 +270,7 @@ components:
         - updatedAt
       properties:
         id:
-          type: integer
+          type: string
         title:
           type: string
         description:
@@ -339,12 +339,11 @@ components:
         - campaignId
         - name
         - phone
-        - submittedAt
       properties:
         id:
-          type: integer
+          type: string
         campaignId:
-          type: integer
+          type: string
         name:
           type: string
         phone:
@@ -404,7 +403,7 @@ components:
         - progressPercent
       properties:
         id:
-          type: integer
+          type: string
         title:
           type: string
         description:
@@ -433,7 +432,7 @@ components:
         - createdAt
       properties:
         id:
-          type: integer
+          type: string
         title:
           type: string
         status:

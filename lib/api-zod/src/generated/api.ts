@@ -21,7 +21,7 @@ export const HealthCheckResponse = zod.object({
  * @summary List all campaigns
  */
 export const ListCampaignsResponseItem = zod.object({
-  "id": zod.number(),
+  "id": zod.string(),
   "title": zod.string(),
   "description": zod.string().nullish(),
   "status": zod.enum(['draft', 'active', 'completed']),
@@ -53,7 +53,7 @@ export const CreateCampaignBody = zod.object({
 })
 
 export const CreateCampaignResponse = zod.object({
-  "id": zod.number(),
+  "id": zod.string(),
   "title": zod.string(),
   "description": zod.string().nullish(),
   "status": zod.enum(['draft', 'active', 'completed']),
@@ -73,11 +73,11 @@ export const CreateCampaignResponse = zod.object({
  * @summary Get a single campaign
  */
 export const GetCampaignParams = zod.object({
-  "id": zod.coerce.number()
+  "id": zod.coerce.string()
 })
 
 export const GetCampaignResponse = zod.object({
-  "id": zod.number(),
+  "id": zod.string(),
   "title": zod.string(),
   "description": zod.string().nullish(),
   "status": zod.enum(['draft', 'active', 'completed']),
@@ -97,7 +97,7 @@ export const GetCampaignResponse = zod.object({
  * @summary Update a campaign
  */
 export const UpdateCampaignParams = zod.object({
-  "id": zod.coerce.number()
+  "id": zod.coerce.string()
 })
 
 
@@ -112,7 +112,7 @@ export const UpdateCampaignBody = zod.object({
 })
 
 export const UpdateCampaignResponse = zod.object({
-  "id": zod.number(),
+  "id": zod.string(),
   "title": zod.string(),
   "description": zod.string().nullish(),
   "status": zod.enum(['draft', 'active', 'completed']),
@@ -132,7 +132,7 @@ export const UpdateCampaignResponse = zod.object({
  * @summary Delete a campaign
  */
 export const DeleteCampaignParams = zod.object({
-  "id": zod.coerce.number()
+  "id": zod.coerce.string()
 })
 
 export const DeleteCampaignResponse = zod.void()
@@ -142,25 +142,44 @@ export const DeleteCampaignResponse = zod.void()
  * @summary Download VCF file for a campaign (only when target reached)
  */
 export const DownloadCampaignVcfParams = zod.object({
-  "id": zod.coerce.number()
+  "id": zod.coerce.string()
 })
 
 export const DownloadCampaignVcfResponse = zod.unknown()
 
 
 /**
+ * @summary Get public campaign info by share token (for submission page)
+ */
+export const GetCampaignByTokenParams = zod.object({
+  "token": zod.coerce.string()
+})
+
+export const GetCampaignByTokenResponse = zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "status": zod.enum(['draft', 'active', 'completed']),
+  "targetContacts": zod.number(),
+  "contactsCollected": zod.number(),
+  "remainingContacts": zod.number(),
+  "progressPercent": zod.number()
+})
+
+
+/**
  * @summary List contacts submitted to a campaign
  */
 export const ListCampaignContactsParams = zod.object({
-  "id": zod.coerce.number()
+  "id": zod.coerce.string()
 })
 
 export const ListCampaignContactsResponseItem = zod.object({
-  "id": zod.number(),
-  "campaignId": zod.number(),
+  "id": zod.string(),
+  "campaignId": zod.string(),
   "name": zod.string(),
   "phone": zod.string(),
-  "submittedAt": zod.coerce.date()
+  "submittedAt": zod.coerce.date().optional()
 })
 export const ListCampaignContactsResponse = zod.array(ListCampaignContactsResponseItem)
 
@@ -169,7 +188,7 @@ export const ListCampaignContactsResponse = zod.array(ListCampaignContactsRespon
  * @summary Submit a contact to a campaign (public endpoint)
  */
 export const SubmitContactParams = zod.object({
-  "id": zod.coerce.number()
+  "id": zod.coerce.string()
 })
 
 
@@ -184,11 +203,11 @@ export const SubmitContactBody = zod.object({
 })
 
 export const SubmitContactResponse = zod.object({
-  "id": zod.number(),
-  "campaignId": zod.number(),
+  "id": zod.string(),
+  "campaignId": zod.string(),
   "name": zod.string(),
   "phone": zod.string(),
-  "submittedAt": zod.coerce.date()
+  "submittedAt": zod.coerce.date().optional()
 })
 
 
@@ -209,7 +228,7 @@ export const GetDashboardStatsResponse = zod.object({
  * @summary Get per-campaign analytics data
  */
 export const GetCampaignAnalyticsResponseItem = zod.object({
-  "id": zod.number(),
+  "id": zod.string(),
   "title": zod.string(),
   "status": zod.string(),
   "targetContacts": zod.number(),

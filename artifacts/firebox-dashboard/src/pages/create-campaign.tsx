@@ -27,7 +27,7 @@ export default function CreateCampaign() {
   const [, setLocation] = useLocation();
   const params = useParams();
   const isEdit = !!params.id;
-  const campaignId = isEdit ? Number(params.id) : null;
+  const campaignId = isEdit ? params.id : null;
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -45,11 +45,11 @@ export default function CreateCampaign() {
     },
   });
 
-  const { data: existing, isLoading: isLoadingExisting } = useGetCampaign(campaignId as number, { 
-    query: { enabled: isEdit, queryKey: getGetCampaignQueryKey(campaignId as number) } 
+  const { data: existing, isLoading: isLoadingExisting } = useGetCampaign(campaignId as string, { 
+    query: { enabled: isEdit, queryKey: getGetCampaignQueryKey(campaignId as string) } 
   });
 
-  const initializedForId = useRef<number | null>(null);
+  const initializedForId = useRef<string | null>(null);
 
   useEffect(() => {
     if (isEdit && existing && initializedForId.current !== existing.id) {

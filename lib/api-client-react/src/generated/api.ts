@@ -23,6 +23,7 @@ import type {
   Campaign,
   CampaignAnalytics,
   CampaignInput,
+  CampaignPublic,
   CampaignUpdate,
   Contact,
   ContactInput,
@@ -282,7 +283,7 @@ export const useCreateCampaign = <TError = ErrorType<void>,
       return useMutation(getCreateCampaignMutationOptions(options));
     }
 
-export const getGetCampaignUrl = (id: number,) => {
+export const getGetCampaignUrl = (id: string,) => {
 
 
 
@@ -293,7 +294,7 @@ export const getGetCampaignUrl = (id: number,) => {
 /**
  * @summary Get a single campaign
  */
-export const getCampaign = async (id: number, options?: RequestInit): Promise<Campaign> => {
+export const getCampaign = async (id: string, options?: RequestInit): Promise<Campaign> => {
 
   return customFetch<Campaign>(getGetCampaignUrl(id),
   {
@@ -308,14 +309,14 @@ export const getCampaign = async (id: number, options?: RequestInit): Promise<Ca
 
 
 
-export const getGetCampaignQueryKey = (id: number,) => {
+export const getGetCampaignQueryKey = (id: string,) => {
     return [
     `/api/campaigns/${id}`
     ] as const;
     }
 
 
-export const getGetCampaignQueryOptions = <TData = Awaited<ReturnType<typeof getCampaign>>, TError = ErrorType<void>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCampaign>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getGetCampaignQueryOptions = <TData = Awaited<ReturnType<typeof getCampaign>>, TError = ErrorType<void>>(id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCampaign>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -342,7 +343,7 @@ export type GetCampaignQueryError = ErrorType<void>
  */
 
 export function useGetCampaign<TData = Awaited<ReturnType<typeof getCampaign>>, TError = ErrorType<void>>(
- id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCampaign>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+ id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCampaign>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -359,7 +360,7 @@ export function useGetCampaign<TData = Awaited<ReturnType<typeof getCampaign>>, 
 
 
 
-export const getUpdateCampaignUrl = (id: number,) => {
+export const getUpdateCampaignUrl = (id: string,) => {
 
 
 
@@ -370,7 +371,7 @@ export const getUpdateCampaignUrl = (id: number,) => {
 /**
  * @summary Update a campaign
  */
-export const updateCampaign = async (id: number,
+export const updateCampaign = async (id: string,
     campaignUpdate: CampaignUpdate, options?: RequestInit): Promise<Campaign> => {
 
   return customFetch<Campaign>(getUpdateCampaignUrl(id),
@@ -386,8 +387,8 @@ export const updateCampaign = async (id: number,
 
 
 export const getUpdateCampaignMutationOptions = <TError = ErrorType<void>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCampaign>>, TError,{id: number;data: BodyType<CampaignUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof updateCampaign>>, TError,{id: number;data: BodyType<CampaignUpdate>}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCampaign>>, TError,{id: string;data: BodyType<CampaignUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateCampaign>>, TError,{id: string;data: BodyType<CampaignUpdate>}, TContext> => {
 
 const mutationKey = ['updateCampaign'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
@@ -399,7 +400,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateCampaign>>, {id: number;data: BodyType<CampaignUpdate>}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateCampaign>>, {id: string;data: BodyType<CampaignUpdate>}> = (props) => {
           const {id,data} = props ?? {};
 
           return  updateCampaign(id,data,requestOptions)
@@ -420,17 +421,17 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
  * @summary Update a campaign
  */
 export const useUpdateCampaign = <TError = ErrorType<void>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCampaign>>, TError,{id: number;data: BodyType<CampaignUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCampaign>>, TError,{id: string;data: BodyType<CampaignUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof updateCampaign>>,
         TError,
-        {id: number;data: BodyType<CampaignUpdate>},
+        {id: string;data: BodyType<CampaignUpdate>},
         TContext
       > => {
       return useMutation(getUpdateCampaignMutationOptions(options));
     }
 
-export const getDeleteCampaignUrl = (id: number,) => {
+export const getDeleteCampaignUrl = (id: string,) => {
 
 
 
@@ -441,7 +442,7 @@ export const getDeleteCampaignUrl = (id: number,) => {
 /**
  * @summary Delete a campaign
  */
-export const deleteCampaign = async (id: number, options?: RequestInit): Promise<void> => {
+export const deleteCampaign = async (id: string, options?: RequestInit): Promise<void> => {
 
   return customFetch<void>(getDeleteCampaignUrl(id),
   {
@@ -456,8 +457,8 @@ export const deleteCampaign = async (id: number, options?: RequestInit): Promise
 
 
 export const getDeleteCampaignMutationOptions = <TError = ErrorType<void>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCampaign>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteCampaign>>, TError,{id: number}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCampaign>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteCampaign>>, TError,{id: string}, TContext> => {
 
 const mutationKey = ['deleteCampaign'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
@@ -469,7 +470,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteCampaign>>, {id: number}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteCampaign>>, {id: string}> = (props) => {
           const {id} = props ?? {};
 
           return  deleteCampaign(id,requestOptions)
@@ -490,17 +491,17 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
  * @summary Delete a campaign
  */
 export const useDeleteCampaign = <TError = ErrorType<void>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCampaign>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCampaign>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof deleteCampaign>>,
         TError,
-        {id: number},
+        {id: string},
         TContext
       > => {
       return useMutation(getDeleteCampaignMutationOptions(options));
     }
 
-export const getDownloadCampaignVcfUrl = (id: number,) => {
+export const getDownloadCampaignVcfUrl = (id: string,) => {
 
 
 
@@ -511,7 +512,7 @@ export const getDownloadCampaignVcfUrl = (id: number,) => {
 /**
  * @summary Download VCF file for a campaign (only when target reached)
  */
-export const downloadCampaignVcf = async (id: number, options?: RequestInit): Promise<string> => {
+export const downloadCampaignVcf = async (id: string, options?: RequestInit): Promise<string> => {
 
   return customFetch<string>(getDownloadCampaignVcfUrl(id),
   {
@@ -526,14 +527,14 @@ export const downloadCampaignVcf = async (id: number, options?: RequestInit): Pr
 
 
 
-export const getDownloadCampaignVcfQueryKey = (id: number,) => {
+export const getDownloadCampaignVcfQueryKey = (id: string,) => {
     return [
     `/api/campaigns/${id}/vcf`
     ] as const;
     }
 
 
-export const getDownloadCampaignVcfQueryOptions = <TData = Awaited<ReturnType<typeof downloadCampaignVcf>>, TError = ErrorType<void>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof downloadCampaignVcf>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getDownloadCampaignVcfQueryOptions = <TData = Awaited<ReturnType<typeof downloadCampaignVcf>>, TError = ErrorType<void>>(id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof downloadCampaignVcf>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -560,7 +561,7 @@ export type DownloadCampaignVcfQueryError = ErrorType<void>
  */
 
 export function useDownloadCampaignVcf<TData = Awaited<ReturnType<typeof downloadCampaignVcf>>, TError = ErrorType<void>>(
- id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof downloadCampaignVcf>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+ id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof downloadCampaignVcf>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -577,7 +578,84 @@ export function useDownloadCampaignVcf<TData = Awaited<ReturnType<typeof downloa
 
 
 
-export const getListCampaignContactsUrl = (id: number,) => {
+export const getGetCampaignByTokenUrl = (token: string,) => {
+
+
+
+
+  return `/api/campaigns/share/${token}`
+}
+
+/**
+ * @summary Get public campaign info by share token (for submission page)
+ */
+export const getCampaignByToken = async (token: string, options?: RequestInit): Promise<CampaignPublic> => {
+
+  return customFetch<CampaignPublic>(getGetCampaignByTokenUrl(token),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetCampaignByTokenQueryKey = (token: string,) => {
+    return [
+    `/api/campaigns/share/${token}`
+    ] as const;
+    }
+
+
+export const getGetCampaignByTokenQueryOptions = <TData = Awaited<ReturnType<typeof getCampaignByToken>>, TError = ErrorType<void>>(token: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCampaignByToken>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetCampaignByTokenQueryKey(token);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCampaignByToken>>> = ({ signal }) => getCampaignByToken(token, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: token !== null && token !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCampaignByToken>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetCampaignByTokenQueryResult = NonNullable<Awaited<ReturnType<typeof getCampaignByToken>>>
+export type GetCampaignByTokenQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get public campaign info by share token (for submission page)
+ */
+
+export function useGetCampaignByToken<TData = Awaited<ReturnType<typeof getCampaignByToken>>, TError = ErrorType<void>>(
+ token: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCampaignByToken>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetCampaignByTokenQueryOptions(token,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getListCampaignContactsUrl = (id: string,) => {
 
 
 
@@ -588,7 +666,7 @@ export const getListCampaignContactsUrl = (id: number,) => {
 /**
  * @summary List contacts submitted to a campaign
  */
-export const listCampaignContacts = async (id: number, options?: RequestInit): Promise<Contact[]> => {
+export const listCampaignContacts = async (id: string, options?: RequestInit): Promise<Contact[]> => {
 
   return customFetch<Contact[]>(getListCampaignContactsUrl(id),
   {
@@ -603,14 +681,14 @@ export const listCampaignContacts = async (id: number, options?: RequestInit): P
 
 
 
-export const getListCampaignContactsQueryKey = (id: number,) => {
+export const getListCampaignContactsQueryKey = (id: string,) => {
     return [
     `/api/campaigns/${id}/contacts`
     ] as const;
     }
 
 
-export const getListCampaignContactsQueryOptions = <TData = Awaited<ReturnType<typeof listCampaignContacts>>, TError = ErrorType<unknown>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCampaignContacts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getListCampaignContactsQueryOptions = <TData = Awaited<ReturnType<typeof listCampaignContacts>>, TError = ErrorType<unknown>>(id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCampaignContacts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -637,7 +715,7 @@ export type ListCampaignContactsQueryError = ErrorType<unknown>
  */
 
 export function useListCampaignContacts<TData = Awaited<ReturnType<typeof listCampaignContacts>>, TError = ErrorType<unknown>>(
- id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCampaignContacts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+ id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCampaignContacts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -654,7 +732,7 @@ export function useListCampaignContacts<TData = Awaited<ReturnType<typeof listCa
 
 
 
-export const getSubmitContactUrl = (id: number,) => {
+export const getSubmitContactUrl = (id: string,) => {
 
 
 
@@ -665,7 +743,7 @@ export const getSubmitContactUrl = (id: number,) => {
 /**
  * @summary Submit a contact to a campaign (public endpoint)
  */
-export const submitContact = async (id: number,
+export const submitContact = async (id: string,
     contactInput: ContactInput, options?: RequestInit): Promise<Contact> => {
 
   return customFetch<Contact>(getSubmitContactUrl(id),
@@ -681,8 +759,8 @@ export const submitContact = async (id: number,
 
 
 export const getSubmitContactMutationOptions = <TError = ErrorType<void>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitContact>>, TError,{id: number;data: BodyType<ContactInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof submitContact>>, TError,{id: number;data: BodyType<ContactInput>}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitContact>>, TError,{id: string;data: BodyType<ContactInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof submitContact>>, TError,{id: string;data: BodyType<ContactInput>}, TContext> => {
 
 const mutationKey = ['submitContact'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
@@ -694,7 +772,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof submitContact>>, {id: number;data: BodyType<ContactInput>}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof submitContact>>, {id: string;data: BodyType<ContactInput>}> = (props) => {
           const {id,data} = props ?? {};
 
           return  submitContact(id,data,requestOptions)
@@ -715,11 +793,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
  * @summary Submit a contact to a campaign (public endpoint)
  */
 export const useSubmitContact = <TError = ErrorType<void>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitContact>>, TError,{id: number;data: BodyType<ContactInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitContact>>, TError,{id: string;data: BodyType<ContactInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof submitContact>>,
         TError,
-        {id: number;data: BodyType<ContactInput>},
+        {id: string;data: BodyType<ContactInput>},
         TContext
       > => {
       return useMutation(getSubmitContactMutationOptions(options));

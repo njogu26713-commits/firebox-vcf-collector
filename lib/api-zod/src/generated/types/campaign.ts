@@ -8,7 +8,7 @@
 import type { CampaignStatus } from './campaignStatus';
 
 export interface Campaign {
-  id: number;
+  id: string;
   title: string;
   /** @nullable */
   description?: string | null;
