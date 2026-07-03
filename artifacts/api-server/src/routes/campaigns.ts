@@ -1,7 +1,6 @@
 import { Router } from "express";
-import { eq, count, sql } from "drizzle-orm";
 import { randomBytes } from "crypto";
-import { db, campaignsTable, contactsTable } from "@workspace/db";
+import { Campaign, Contact } from "../lib/models";
 
 const router = Router();
 
@@ -9,7 +8,7 @@ function makeShareToken() {
   return randomBytes(8).toString("hex");
 }
 
-function formatCampaign(campaign: typeof campaignsTable.$inferSelect, contactsCollected: number) {
+function formatCampaign(campaign: any, contactsCollected: number) {
   const remaining = Math.max(0, campaign.targetContacts - contactsCollected);
   const progress = campaign.targetContacts > 0
     ? Math.min(100, Math.round((contactsCollected / campaign.targetContacts) * 100))
@@ -18,7 +17,15 @@ function formatCampaign(campaign: typeof campaignsTable.$inferSelect, contactsCo
     ? `https://${process.env.REPLIT_DEV_DOMAIN}`
     : "http://localhost:80";
   return {
-    ...campaign,
+    id: campaign._id,
+    title: campaign.title,
+    description: campaign.description ?? null,
+    status: campaign.status,
+    targetContacts: campaign.targetContacts,
+    shareToken: campaign.shareToken,
+    vcfDownloaded: campaign.vcfDownloaded,
+    createdAt: campaign.createdAt,
+    updatedAt: campaign.updatedAt,
     contactsCollected,
     remainingContacts: remaining,
     progressPercent: progress,
@@ -28,14 +35,11 @@ function formatCampaign(campaign: typeof campaignsTable.$inferSelect, contactsCo
 
 // GET /campaigns
 router.get("/campaigns", async (req, res) => {
-  const campaigns = await db.select().from(campaignsTable).orderBy(campaignsTable.createdAt);
+  const campaigns = await Campaign.find().sort({ createdAt: 1 });
   const results = await Promise.all(
     campaigns.map(async (c) => {
-      const [row] = await db
-        .select({ count: count() })
-        .from(contactsTable)
-        .where(eq(contactsTable.campaignId, c.id));
-      return formatCampaign(c, Number(row?.count ?? 0));
+      const count = await Contact.countDocuments({ campaignId: c._id });
+      return formatCampaign(c, count);
     })
   );
   res.json(results);
@@ -53,37 +57,30 @@ router.post("/campaigns", async (req, res) => {
     res.status(400).json({ error: "targetContacts must be a positive integer" });
     return;
   }
-  const validStatuses = ["draft", "active", "completed"] as const;
+  const validStatuses = ["draft", "active", "completed"];
   const resolvedStatus = status && validStatuses.includes(status) ? status : "draft";
-  const [campaign] = await db
-    .insert(campaignsTable)
-    .values({
-      title: title.trim(),
-      description: description ? String(description).trim() : null,
-      targetContacts: target,
-      status: resolvedStatus,
-      shareToken: makeShareToken(),
-    })
-    .returning();
+  const campaign = await Campaign.create({
+    title: title.trim(),
+    description: description ? String(description).trim() : null,
+    targetContacts: target,
+    status: resolvedStatus,
+    shareToken: makeShareToken(),
+  });
   res.status(201).json(formatCampaign(campaign, 0));
 });
 
 // GET /campaigns/:id
 router.get("/campaigns/:id", async (req, res) => {
-  const id = Number(req.params.id);
-  if (!Number.isInteger(id) || id < 1) { res.status(400).json({ error: "Invalid id" }); return; }
-  const [campaign] = await db.select().from(campaignsTable).where(eq(campaignsTable.id, id));
+  const campaign = await Campaign.findById(req.params.id).catch(() => null);
   if (!campaign) { res.status(404).json({ error: "Not found" }); return; }
-  const [row] = await db.select({ count: count() }).from(contactsTable).where(eq(contactsTable.campaignId, id));
-  res.json(formatCampaign(campaign, Number(row?.count ?? 0)));
+  const count = await Contact.countDocuments({ campaignId: campaign._id });
+  res.json(formatCampaign(campaign, count));
 });
 
 // PATCH /campaigns/:id
 router.patch("/campaigns/:id", async (req, res) => {
-  const id = Number(req.params.id);
-  if (!Number.isInteger(id) || id < 1) { res.status(400).json({ error: "Invalid id" }); return; }
   const { title, description, targetContacts, status } = req.body;
-  const updates: Partial<typeof campaignsTable.$inferInsert> = { updatedAt: new Date() };
+  const updates: Record<string, any> = {};
   if (title !== undefined) {
     if (typeof title !== "string" || title.trim().length === 0) {
       res.status(400).json({ error: "title must be a non-empty string" }); return;
@@ -96,47 +93,43 @@ router.patch("/campaigns/:id", async (req, res) => {
     if (!Number.isInteger(t) || t < 1) { res.status(400).json({ error: "targetContacts must be a positive integer" }); return; }
     updates.targetContacts = t;
   }
-  const validStatuses = ["draft", "active", "completed"] as const;
+  const validStatuses = ["draft", "active", "completed"];
   if (status !== undefined) {
     if (!validStatuses.includes(status)) { res.status(400).json({ error: "Invalid status" }); return; }
     updates.status = status;
   }
-  const [campaign] = await db.update(campaignsTable).set(updates).where(eq(campaignsTable.id, id)).returning();
+  const campaign = await Campaign.findByIdAndUpdate(req.params.id, updates, { new: true }).catch(() => null);
   if (!campaign) { res.status(404).json({ error: "Not found" }); return; }
-  const [row] = await db.select({ count: count() }).from(contactsTable).where(eq(contactsTable.campaignId, id));
-  res.json(formatCampaign(campaign, Number(row?.count ?? 0)));
+  const count = await Contact.countDocuments({ campaignId: campaign._id });
+  res.json(formatCampaign(campaign, count));
 });
 
 // DELETE /campaigns/:id
 router.delete("/campaigns/:id", async (req, res) => {
-  const id = Number(req.params.id);
-  if (!Number.isInteger(id) || id < 1) { res.status(400).json({ error: "Invalid id" }); return; }
-  const [deleted] = await db.delete(campaignsTable).where(eq(campaignsTable.id, id)).returning();
-  if (!deleted) { res.status(404).json({ error: "Not found" }); return; }
+  const campaign = await Campaign.findByIdAndDelete(req.params.id).catch(() => null);
+  if (!campaign) { res.status(404).json({ error: "Not found" }); return; }
+  await Contact.deleteMany({ campaignId: campaign._id });
   res.status(204).end();
 });
 
 // GET /campaigns/:id/vcf
 router.get("/campaigns/:id/vcf", async (req, res) => {
-  const id = Number(req.params.id);
-  if (!Number.isInteger(id) || id < 1) { res.status(400).json({ error: "Invalid id" }); return; }
-  const [campaign] = await db.select().from(campaignsTable).where(eq(campaignsTable.id, id));
+  const campaign = await Campaign.findById(req.params.id).catch(() => null);
   if (!campaign) { res.status(404).json({ error: "Not found" }); return; }
-  const [row] = await db.select({ count: count() }).from(contactsTable).where(eq(contactsTable.campaignId, id));
-  const collected = Number(row?.count ?? 0);
+  const collected = await Contact.countDocuments({ campaignId: campaign._id });
   if (collected < campaign.targetContacts) {
     res.status(403).json({ error: "Target not yet reached" });
     return;
   }
-  const contacts = await db.select().from(contactsTable).where(eq(contactsTable.campaignId, id));
-  const vcfLines = contacts.map((c) => [
+  const contacts = await Contact.find({ campaignId: campaign._id });
+  const vcfLines = contacts.map((c: any) => [
     "BEGIN:VCARD",
     "VERSION:3.0",
     `FN:${c.name}`,
     `TEL:${c.phone}`,
     "END:VCARD",
   ].join("\r\n")).join("\r\n");
-  await db.update(campaignsTable).set({ vcfDownloaded: true }).where(eq(campaignsTable.id, id));
+  await Campaign.findByIdAndUpdate(campaign._id, { vcfDownloaded: true });
   res.setHeader("Content-Type", "text/vcard");
   res.setHeader("Content-Disposition", `attachment; filename="${campaign.title}.vcf"`);
   res.send(vcfLines);
@@ -144,19 +137,13 @@ router.get("/campaigns/:id/vcf", async (req, res) => {
 
 // GET /campaigns/:id/contacts
 router.get("/campaigns/:id/contacts", async (req, res) => {
-  const id = Number(req.params.id);
-  if (!Number.isInteger(id) || id < 1) { res.status(400).json({ error: "Invalid id" }); return; }
-  const contacts = await db.select().from(contactsTable).where(eq(contactsTable.campaignId, id));
+  const contacts = await Contact.find({ campaignId: req.params.id });
   res.json(contacts);
 });
 
-// POST /campaigns/:id/contacts  (public submission endpoint)
+// POST /campaigns/:id/contacts (public submission)
 router.post("/campaigns/:id/contacts", async (req, res) => {
-  const campaignId = Number(req.params.id);
-  if (!Number.isInteger(campaignId) || campaignId < 1) { res.status(400).json({ error: "Invalid campaign id" }); return; }
-
-  // Validate campaign exists
-  const [campaign] = await db.select().from(campaignsTable).where(eq(campaignsTable.id, campaignId));
+  const campaign = await Campaign.findById(req.params.id).catch(() => null);
   if (!campaign) { res.status(404).json({ error: "Campaign not found" }); return; }
   if (campaign.status !== "active") { res.status(400).json({ error: "Campaign is not accepting submissions" }); return; }
 
@@ -171,30 +158,22 @@ router.post("/campaigns/:id/contacts", async (req, res) => {
     res.status(400).json({ error: "consent is required" }); return;
   }
 
-  // Duplicate phone check using normalized digits only
-  const [dup] = await db
-    .select({ id: contactsTable.id })
-    .from(contactsTable)
-    .where(
-      sql`${contactsTable.campaignId} = ${campaignId}
-          AND regexp_replace(${contactsTable.phone}, '[^0-9]', '', 'g')
-            = regexp_replace(${phone}::text, '[^0-9]', '', 'g')`
-    );
-  if (dup) {
+  const normalizedPhone = phone.replace(/[^0-9]/g, "");
+  const existing = await Contact.findOne({ campaignId: campaign._id }).where("phone").equals(phone.trim());
+  if (existing) {
     res.status(409).json({ error: "This phone number has already been submitted" });
     return;
   }
 
-  const [contact] = await db.insert(contactsTable).values({
-    campaignId,
+  const contact = await Contact.create({
+    campaignId: campaign._id,
     name: name.trim(),
     phone: phone.trim(),
-  }).returning();
+  });
 
-  // Auto-complete campaign if target reached
-  const [countRow] = await db.select({ count: count() }).from(contactsTable).where(eq(contactsTable.campaignId, campaignId));
-  if (Number(countRow?.count ?? 0) >= campaign.targetContacts) {
-    await db.update(campaignsTable).set({ status: "completed" }).where(eq(campaignsTable.id, campaignId));
+  const count = await Contact.countDocuments({ campaignId: campaign._id });
+  if (count >= campaign.targetContacts) {
+    await Campaign.findByIdAndUpdate(campaign._id, { status: "completed" });
   }
 
   res.status(201).json(contact);
