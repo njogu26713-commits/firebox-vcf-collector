@@ -1,0 +1,2 @@
+- [Lib declaration rebuild rule](lib-declaration-rebuild.md) — after editing lib/* schema files, always run typecheck:libs before leaf artifact typechecks or imports break with TS2305
+- [Internal package import anti-pattern](internal-package-imports.md) — never import from internal paths like @workspace/pkg/src/generated/...; always use the public barrel export
