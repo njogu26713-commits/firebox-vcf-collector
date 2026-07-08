@@ -10,8 +10,11 @@ import {
   LogOut, 
   Bell, 
   User,
-  Menu
+  Menu,
+  Sun,
+  Moon,
 } from 'lucide-react';
+import { useTheme } from '@/contexts/theme';
 
 const NAV_ITEMS = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -24,6 +27,7 @@ const NAV_ITEMS = [
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+  const { theme, toggleTheme } = useTheme();
 
   // Close mobile menu on route change
   React.useEffect(() => {
@@ -101,6 +105,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </div>
           
           <div className="flex items-center gap-4">
+            <button
+              onClick={toggleTheme}
+              className="p-2 text-muted-foreground hover:text-foreground rounded-full hover:bg-accent transition-colors outline-none"
+              title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              data-testid="button-theme-toggle"
+            >
+              {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
+
             <button className="p-2 text-muted-foreground hover:text-foreground rounded-full hover:bg-accent transition-colors outline-none relative" data-testid="button-notifications">
               <Bell className="w-5 h-5" />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full border border-background"></span>
