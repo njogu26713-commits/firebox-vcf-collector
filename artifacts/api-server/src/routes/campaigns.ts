@@ -26,6 +26,7 @@ function formatCampaign(campaign: any, contactsCollected: number) {
     shareToken: campaign.shareToken,
     vcfDownloaded: campaign.vcfDownloaded,
     allowedCountryCode: campaign.allowedCountryCode ?? null,
+    requireWhatsapp: campaign.requireWhatsapp ?? false,
     createdAt: campaign.createdAt,
     updatedAt: campaign.updatedAt,
     contactsCollected,
@@ -49,7 +50,7 @@ router.get("/campaigns", async (req, res) => {
 
 // POST /campaigns
 router.post("/campaigns", async (req, res) => {
-  const { title, description, targetContacts, status, allowedCountryCode } = req.body;
+  const { title, description, targetContacts, status, allowedCountryCode, requireWhatsapp } = req.body;
   if (!title || typeof title !== "string" || title.trim().length === 0) {
     res.status(400).json({ error: "title is required" });
     return;
@@ -72,6 +73,7 @@ router.post("/campaigns", async (req, res) => {
     status: resolvedStatus,
     shareToken: makeShareToken(),
     allowedCountryCode: resolvedCountryCode,
+    requireWhatsapp: requireWhatsapp === true,
   });
   res.status(201).json(formatCampaign(campaign, 0));
 });
@@ -100,7 +102,7 @@ router.get("/campaigns/:id", async (req, res) => {
 
 // PATCH /campaigns/:id
 router.patch("/campaigns/:id", async (req, res) => {
-  const { title, description, targetContacts, status, allowedCountryCode } = req.body;
+  const { title, description, targetContacts, status, allowedCountryCode, requireWhatsapp } = req.body;
   const updates: Record<string, any> = {};
   if (title !== undefined) {
     if (typeof title !== "string" || title.trim().length === 0) {
@@ -124,6 +126,9 @@ router.patch("/campaigns/:id", async (req, res) => {
       allowedCountryCode && typeof allowedCountryCode === "string"
         ? allowedCountryCode.toUpperCase().trim()
         : null;
+  }
+  if (requireWhatsapp !== undefined) {
+    updates.requireWhatsapp = requireWhatsapp === true;
   }
   const campaign = await Campaign.findByIdAndUpdate(req.params.id, updates, { new: true }).catch(() => null);
   if (!campaign) { res.status(404).json({ error: "Not found" }); return; }

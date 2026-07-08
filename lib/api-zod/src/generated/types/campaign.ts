@@ -25,6 +25,8 @@ export interface Campaign {
      * @nullable
      */
   allowedCountryCode?: string | null;
+  /** If true, submitters must confirm their number is active on WhatsApp. */
+  requireWhatsapp?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

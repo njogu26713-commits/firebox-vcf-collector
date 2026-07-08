@@ -36,6 +36,8 @@ export interface Campaign {
      * @nullable
      */
   allowedCountryCode?: string | null;
+  /** If true, submitters must confirm their number is active on WhatsApp. */
+  requireWhatsapp?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -61,6 +63,8 @@ export interface CampaignInput {
      * @nullable
      */
   allowedCountryCode?: string | null;
+  /** If true, submitters must confirm their number is active on WhatsApp. */
+  requireWhatsapp?: boolean;
 }
 
 export type CampaignUpdateStatus = typeof CampaignUpdateStatus[keyof typeof CampaignUpdateStatus];
@@ -84,6 +88,8 @@ export interface CampaignUpdate {
      * @nullable
      */
   allowedCountryCode?: string | null;
+  /** If true, submitters must confirm their number is active on WhatsApp. */
+  requireWhatsapp?: boolean;
 }
 
 export interface Contact {

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams } from 'wouter';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Flame, CheckCircle2, AlertCircle, Loader2, Users, Target, Globe } from 'lucide-react';
+import { Flame, CheckCircle2, AlertCircle, Loader2, Users, Target, Globe, MessageCircle } from 'lucide-react';
 import { getCountryByCode } from '@/lib/countries';
 
 const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, '');
@@ -38,6 +38,7 @@ export default function SubmitPage() {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [consent, setConsent] = useState(false);
+  const [whatsappConsent, setWhatsappConsent] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
   const { data: campaign, isLoading, isError, error } = useQuery({
@@ -55,6 +56,7 @@ export default function SubmitPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (campaign.requireWhatsapp && !whatsappConsent) return;
     mutation.mutate({ name: name.trim(), phone: phone.trim(), consent });
   };
 
@@ -235,6 +237,27 @@ export default function SubmitPage() {
                 </span>
               </label>
 
+              {campaign.requireWhatsapp && (
+                <>
+                  <div className="flex items-center gap-2 text-xs font-medium text-green-600 dark:text-green-400 bg-green-500/10 border border-green-500/20 rounded-xl px-4 py-3">
+                    <MessageCircle className="w-4 h-4 flex-shrink-0" />
+                    This campaign requires an active WhatsApp number.
+                  </div>
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      required
+                      checked={whatsappConsent}
+                      onChange={e => setWhatsappConsent(e.target.checked)}
+                      className="mt-0.5 accent-primary w-4 h-4 flex-shrink-0"
+                    />
+                    <span className="text-xs text-muted-foreground leading-relaxed">
+                      My number above is active on WhatsApp.
+                    </span>
+                  </label>
+                </>
+              )}
+
               {mutation.isError && (
                 <div className="flex items-center gap-2 text-destructive text-sm bg-destructive/10 border border-destructive/20 rounded-xl px-4 py-3">
                   <AlertCircle className="w-4 h-4 flex-shrink-0" />
@@ -244,7 +267,7 @@ export default function SubmitPage() {
 
               <button
                 type="submit"
-                disabled={mutation.isPending || !consent}
+                disabled={mutation.isPending || !consent || (campaign.requireWhatsapp && !whatsappConsent)}
                 className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground font-semibold py-3 rounded-xl transition flex items-center justify-center gap-2 text-sm"
               >
                 {mutation.isPending ? (

@@ -33,6 +33,7 @@ export const ListCampaignsResponseItem = zod.object({
   "shareLink": zod.string(),
   "vcfDownloaded": zod.boolean().optional(),
   "allowedCountryCode": zod.string().nullish().describe('ISO 3166-1 alpha-2 country code. Null means all countries are allowed.'),
+  "requireWhatsapp": zod.boolean().optional().describe('If true, submitters must confirm their number is active on WhatsApp.'),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
@@ -51,7 +52,8 @@ export const CreateCampaignBody = zod.object({
   "description": zod.string().optional(),
   "targetContacts": zod.number().min(1),
   "status": zod.enum(['draft', 'active', 'completed']).optional(),
-  "allowedCountryCode": zod.string().nullish().describe('ISO 3166-1 alpha-2 country code. Null means all countries are allowed.')
+  "allowedCountryCode": zod.string().nullish().describe('ISO 3166-1 alpha-2 country code. Null means all countries are allowed.'),
+  "requireWhatsapp": zod.boolean().optional().describe('If true, submitters must confirm their number is active on WhatsApp.')
 })
 
 export const CreateCampaignResponse = zod.object({
@@ -67,6 +69,7 @@ export const CreateCampaignResponse = zod.object({
   "shareLink": zod.string(),
   "vcfDownloaded": zod.boolean().optional(),
   "allowedCountryCode": zod.string().nullish().describe('ISO 3166-1 alpha-2 country code. Null means all countries are allowed.'),
+  "requireWhatsapp": zod.boolean().optional().describe('If true, submitters must confirm their number is active on WhatsApp.'),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
@@ -92,6 +95,7 @@ export const GetCampaignResponse = zod.object({
   "shareLink": zod.string(),
   "vcfDownloaded": zod.boolean().optional(),
   "allowedCountryCode": zod.string().nullish().describe('ISO 3166-1 alpha-2 country code. Null means all countries are allowed.'),
+  "requireWhatsapp": zod.boolean().optional().describe('If true, submitters must confirm their number is active on WhatsApp.'),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
@@ -113,7 +117,8 @@ export const UpdateCampaignBody = zod.object({
   "description": zod.string().optional(),
   "targetContacts": zod.number().min(1).optional(),
   "status": zod.enum(['draft', 'active', 'completed']).optional(),
-  "allowedCountryCode": zod.string().nullish().describe('ISO 3166-1 alpha-2 country code. Null means all countries are allowed.')
+  "allowedCountryCode": zod.string().nullish().describe('ISO 3166-1 alpha-2 country code. Null means all countries are allowed.'),
+  "requireWhatsapp": zod.boolean().optional().describe('If true, submitters must confirm their number is active on WhatsApp.')
 })
 
 export const UpdateCampaignResponse = zod.object({
@@ -129,6 +134,7 @@ export const UpdateCampaignResponse = zod.object({
   "shareLink": zod.string(),
   "vcfDownloaded": zod.boolean().optional(),
   "allowedCountryCode": zod.string().nullish().describe('ISO 3166-1 alpha-2 country code. Null means all countries are allowed.'),
+  "requireWhatsapp": zod.boolean().optional().describe('If true, submitters must confirm their number is active on WhatsApp.'),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })

@@ -295,6 +295,9 @@ components:
         allowedCountryCode:
           type: ["string", "null"]
           description: ISO 3166-1 alpha-2 country code. Null means all countries are allowed.
+        requireWhatsapp:
+          type: boolean
+          description: If true, submitters must confirm their number is active on WhatsApp.
         createdAt:
           type: string
           format: date-time
@@ -322,6 +325,9 @@ components:
         allowedCountryCode:
           type: ["string", "null"]
           description: ISO 3166-1 alpha-2 country code. Null means all countries are allowed.
+        requireWhatsapp:
+          type: boolean
+          description: If true, submitters must confirm their number is active on WhatsApp.
 
     CampaignUpdate:
       type: object
@@ -340,6 +346,9 @@ components:
         allowedCountryCode:
           type: ["string", "null"]
           description: ISO 3166-1 alpha-2 country code. Null means all countries are allowed.
+        requireWhatsapp:
+          type: boolean
+          description: If true, submitters must confirm their number is active on WhatsApp.
 
     Contact:
       type: object

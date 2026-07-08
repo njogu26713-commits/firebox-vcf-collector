@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Flame, ArrowLeft, Loader2, Globe, Search } from 'lucide-react';
+import { Flame, ArrowLeft, Loader2, Globe, Search, MessageCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { COUNTRIES, getCountryByCode } from '@/lib/countries';
 
@@ -21,6 +21,7 @@ const formSchema = z.object({
   targetContacts: z.coerce.number().min(1, 'Target must be at least 1').max(1000000, 'Target too large'),
   status: z.enum(['draft', 'active', 'completed']).default('draft'),
   allowedCountryCode: z.string().nullable().default(null),
+  requireWhatsapp: z.boolean().default(false),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -48,6 +49,7 @@ export default function CreateCampaign() {
       targetContacts: 100,
       status: 'draft',
       allowedCountryCode: null,
+      requireWhatsapp: false,
     },
   });
 
@@ -66,6 +68,7 @@ export default function CreateCampaign() {
         targetContacts: existing.targetContacts,
         status: existing.status as any,
         allowedCountryCode: (existing as any).allowedCountryCode ?? null,
+        requireWhatsapp: (existing as any).requireWhatsapp ?? false,
       });
     }
   }, [existing, form, isEdit]);
@@ -310,6 +313,41 @@ export default function CreateCampaign() {
                     </FormItem>
                   );
                 }}
+              />
+
+              {/* WhatsApp requirement */}
+              <FormField
+                control={form.control}
+                name="requireWhatsapp"
+                render={({ field }) => (
+                  <FormItem>
+                    <div
+                      onClick={() => field.onChange(!field.value)}
+                      className={`flex items-center justify-between gap-4 p-4 rounded-xl border cursor-pointer transition-all select-none ${
+                        field.value
+                          ? 'border-green-500/40 bg-green-500/5'
+                          : 'border-border bg-background hover:bg-secondary'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                          field.value ? 'bg-green-500/15' : 'bg-secondary'
+                        }`}>
+                          <MessageCircle className={`w-5 h-5 ${field.value ? 'text-green-500' : 'text-muted-foreground'}`} />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">Require WhatsApp number</p>
+                          <p className="text-xs text-muted-foreground">Submitters must confirm their number is active on WhatsApp</p>
+                        </div>
+                      </div>
+                      {/* Toggle pill */}
+                      <div className={`relative w-10 h-6 rounded-full flex-shrink-0 transition-colors ${field.value ? 'bg-green-500' : 'bg-border'}`}>
+                        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${field.value ? 'translate-x-5' : 'translate-x-1'}`} />
+                      </div>
+                    </div>
+                    <FormMessage className="text-destructive" />
+                  </FormItem>
+                )}
               />
             </div>
 

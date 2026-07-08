@@ -20,6 +20,7 @@ const campaignSchema = new Schema(
     shareToken: { type: String, required: true, unique: true },
     vcfDownloaded: { type: Boolean, default: false },
     allowedCountryCode: { type: String, default: null },
+    requireWhatsapp: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
