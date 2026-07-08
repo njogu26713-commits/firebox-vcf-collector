@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from './authUser';
 export * from './campaign';
 export * from './campaignAnalytics';
 export * from './campaignInput';
@@ -19,3 +20,5 @@ export * from './contact';
 export * from './contactInput';
 export * from './dashboardStats';
 export * from './healthStatus';
+export * from './loginInput';
+export * from './signupInput';

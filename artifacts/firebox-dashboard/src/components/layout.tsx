@@ -15,7 +15,7 @@ import {
   Moon,
 } from 'lucide-react';
 import { useTheme } from '@/contexts/theme';
-import { useClerk, useUser } from '@clerk/react';
+import { useAuth } from '@/contexts/auth';
 
 const NAV_ITEMS = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -29,9 +29,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const { theme, toggleTheme } = useTheme();
-  const { signOut } = useClerk();
-  const { user } = useUser();
-  const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
+  const { signOut, user } = useAuth();
 
   // Close mobile menu on route change
   React.useEffect(() => {
@@ -84,12 +82,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <div className="flex items-center gap-3 px-3 py-2 rounded-lg">
               <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                 <span className="text-xs font-bold text-primary">
-                  {(user.firstName?.[0] ?? user.emailAddresses?.[0]?.emailAddress?.[0] ?? '?').toUpperCase()}
+                  {(user.name?.[0] ?? user.email?.[0] ?? '?').toUpperCase()}
                 </span>
               </div>
               <div className="min-w-0">
                 <p className="text-xs font-semibold text-sidebar-foreground truncate">
-                  {user.firstName ? `${user.firstName} ${user.lastName ?? ''}`.trim() : user.emailAddresses?.[0]?.emailAddress}
+                  {user.name || user.email}
                 </p>
               </div>
             </div>
@@ -97,7 +95,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <button 
             className="flex items-center gap-3 px-3 py-2.5 w-full rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-foreground transition-all duration-200 outline-none"
             data-testid="nav-logout"
-            onClick={() => signOut({ redirectUrl: basePath || '/' })}
+            onClick={() => signOut()}
           >
             <LogOut className="w-5 h-5 text-sidebar-foreground/70" />
             Log out

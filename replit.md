@@ -13,7 +13,7 @@ White background (#ffffff) with green (#16a34a) accent — `hsl(142 72% 36%)` as
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- Required env: `MONGODB_URI` — MongoDB connection string
+- Required env: `MONGODB_URI` — MongoDB connection string; `SESSION_SECRET` — session cookie signing secret
 
 ## Stack
 
@@ -29,10 +29,14 @@ White background (#ffffff) with green (#16a34a) accent — `hsl(142 72% 36%)` as
 ## Where things live
 
 - `lib/api-spec/openapi.yaml` — single source of truth for all API contracts
-- `artifacts/api-server/src/lib/models.ts` — Mongoose schemas (Campaign, Contact)
+- `artifacts/api-server/src/lib/models.ts` — Mongoose schemas (User, Campaign, Contact)
 - `artifacts/api-server/src/lib/mongodb.ts` — MongoDB connection (requires MONGODB_URI)
+- `artifacts/api-server/src/routes/auth.ts` — email/password signup/login/logout/me (bcryptjs + express-session, session stored in Mongo via connect-mongo)
+- `artifacts/api-server/src/middlewares/requireAuth.ts` — session-based auth guard for protected API routes
 - `artifacts/api-server/src/routes/campaigns.ts` — CRUD + VCF download + contact submission
 - `artifacts/api-server/src/routes/dashboard.ts` — stats + analytics endpoints
+- `artifacts/firebox-dashboard/src/contexts/auth.tsx` — auth context wrapping the generated auth hooks
+- `artifacts/firebox-dashboard/src/pages/sign-in.tsx`, `sign-up.tsx` — custom email/password auth pages
 - `artifacts/firebox-dashboard/src/` — React frontend (pages/, components/)
 - `artifacts/firebox-dashboard/src/index.css` — design tokens (black/orange theme)
 
@@ -42,7 +46,7 @@ White background (#ffffff) with green (#16a34a) accent — `hsl(142 72% 36%)` as
 - Duplicate phone numbers per campaign are blocked at DB level (unique index on normalized digits) and app level
 - VCF download only unlocks when `contactsCollected >= targetContacts` (enforced both server and client)
 - Campaign auto-completes to "completed" status when target is reached via contact submission
-- No authentication implemented yet (single-user assumption); auth middleware should be added before deployment
+- Authentication is self-hosted email/password (no third-party auth provider): bcryptjs password hashing + express-session with a MongoDB-backed store (connect-mongo). Supports multiple accounts; each user only sees their own campaigns (`Campaign.userId`).
 
 ## Product
 

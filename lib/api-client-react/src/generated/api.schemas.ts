@@ -9,6 +9,25 @@ export interface HealthStatus {
   status: string;
 }
 
+export interface SignupInput {
+  email: string;
+  /** @minLength 8 */
+  password: string;
+  name?: string;
+}
+
+export interface LoginInput {
+  email: string;
+  password: string;
+}
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  /** @nullable */
+  name?: string | null;
+}
+
 export type CampaignStatus = typeof CampaignStatus[keyof typeof CampaignStatus];
 
 

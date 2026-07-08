@@ -18,6 +18,57 @@ export const HealthCheckResponse = zod.object({
 
 
 /**
+ * @summary Create a new account with email and password
+ */
+export const signupBodyPasswordMin = 8;
+
+
+
+export const SignupBody = zod.object({
+  "email": zod.string().email(),
+  "password": zod.string().min(signupBodyPasswordMin),
+  "name": zod.string().optional()
+})
+
+export const SignupResponse = zod.object({
+  "id": zod.string(),
+  "email": zod.string(),
+  "name": zod.string().nullish()
+})
+
+
+/**
+ * @summary Sign in with email and password
+ */
+export const LoginBody = zod.object({
+  "email": zod.string().email(),
+  "password": zod.string()
+})
+
+export const LoginResponse = zod.object({
+  "id": zod.string(),
+  "email": zod.string(),
+  "name": zod.string().nullish()
+})
+
+
+/**
+ * @summary Sign out the current session
+ */
+export const LogoutResponse = zod.void()
+
+
+/**
+ * @summary Get the currently signed-in user, if any
+ */
+export const GetCurrentUserResponse = zod.object({
+  "id": zod.string(),
+  "email": zod.string(),
+  "name": zod.string().nullish()
+})
+
+
+/**
  * @summary List all campaigns
  */
 export const ListCampaignsResponseItem = zod.object({
