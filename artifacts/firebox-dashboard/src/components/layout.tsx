@@ -15,6 +15,7 @@ import {
   Moon,
 } from 'lucide-react';
 import { useTheme } from '@/contexts/theme';
+import { useClerk, useUser } from '@clerk/react';
 
 const NAV_ITEMS = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -28,6 +29,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const { theme, toggleTheme } = useTheme();
+  const { signOut } = useClerk();
+  const { user } = useUser();
+  const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
 
   // Close mobile menu on route change
   React.useEffect(() => {
@@ -75,13 +79,28 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           })}
         </nav>
 
-        <div className="p-3 border-t border-sidebar-border">
+        <div className="p-3 border-t border-sidebar-border space-y-1">
+          {user && (
+            <div className="flex items-center gap-3 px-3 py-2 rounded-lg">
+              <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <span className="text-xs font-bold text-primary">
+                  {(user.firstName?.[0] ?? user.emailAddresses?.[0]?.emailAddress?.[0] ?? '?').toUpperCase()}
+                </span>
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-sidebar-foreground truncate">
+                  {user.firstName ? `${user.firstName} ${user.lastName ?? ''}`.trim() : user.emailAddresses?.[0]?.emailAddress}
+                </p>
+              </div>
+            </div>
+          )}
           <button 
             className="flex items-center gap-3 px-3 py-2.5 w-full rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-foreground transition-all duration-200 outline-none"
             data-testid="nav-logout"
+            onClick={() => signOut({ redirectUrl: basePath || '/' })}
           >
             <LogOut className="w-5 h-5 text-sidebar-foreground/70" />
-            Logout
+            Log out
           </button>
         </div>
       </aside>

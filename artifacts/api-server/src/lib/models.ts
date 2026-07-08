@@ -13,6 +13,7 @@ const contactSchema = new Schema(
 
 const campaignSchema = new Schema(
   {
+    userId: { type: String, required: false, index: true },
     title: { type: String, required: true, trim: true },
     description: { type: String, default: null },
     status: { type: String, enum: ["draft", "active", "completed"], default: "draft" },

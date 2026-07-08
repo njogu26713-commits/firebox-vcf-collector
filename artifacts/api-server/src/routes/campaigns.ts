@@ -2,6 +2,7 @@ import { Router } from "express";
 import { randomBytes } from "crypto";
 import { parsePhoneNumberFromString } from "libphonenumber-js";
 import { Campaign, Contact } from "../lib/models";
+import { requireAuth } from "../middlewares/requireAuth";
 
 const router = Router();
 
@@ -36,9 +37,10 @@ function formatCampaign(campaign: any, contactsCollected: number) {
   };
 }
 
-// GET /campaigns
-router.get("/campaigns", async (req, res) => {
-  const campaigns = await Campaign.find().sort({ createdAt: 1 });
+// GET /campaigns — only the signed-in user's campaigns
+router.get("/campaigns", requireAuth, async (req, res) => {
+  const userId = (req as any).userId;
+  const campaigns = await Campaign.find({ userId }).sort({ createdAt: 1 });
   const results = await Promise.all(
     campaigns.map(async (c) => {
       const count = await Contact.countDocuments({ campaignId: c._id });
@@ -48,8 +50,16 @@ router.get("/campaigns", async (req, res) => {
   res.json(results);
 });
 
-// POST /campaigns
-router.post("/campaigns", async (req, res) => {
+// POST /campaigns — max 3 per user
+router.post("/campaigns", requireAuth, async (req, res) => {
+  const userId = (req as any).userId;
+
+  const existing = await Campaign.countDocuments({ userId });
+  if (existing >= 3) {
+    res.status(403).json({ error: "Campaign limit reached. You can have a maximum of 3 VCF campaigns." });
+    return;
+  }
+
   const { title, description, targetContacts, status, allowedCountryCode, requireWhatsapp } = req.body;
   if (!title || typeof title !== "string" || title.trim().length === 0) {
     res.status(400).json({ error: "title is required" });
@@ -67,6 +77,7 @@ router.post("/campaigns", async (req, res) => {
       ? allowedCountryCode.toUpperCase().trim()
       : null;
   const campaign = await Campaign.create({
+    userId,
     title: title.trim(),
     description: description ? String(description).trim() : null,
     targetContacts: target,
@@ -92,16 +103,18 @@ router.get("/campaigns/by-token/:token", async (req, res) => {
   res.json(formatCampaign(campaign, count));
 });
 
-// GET /campaigns/:id
-router.get("/campaigns/:id", async (req, res) => {
-  const campaign = await Campaign.findById(req.params.id).catch(() => null);
+// GET /campaigns/:id — only owner can access
+router.get("/campaigns/:id", requireAuth, async (req, res) => {
+  const userId = (req as any).userId;
+  const campaign = await Campaign.findOne({ _id: req.params.id, userId }).catch(() => null);
   if (!campaign) { res.status(404).json({ error: "Not found" }); return; }
   const count = await Contact.countDocuments({ campaignId: campaign._id });
   res.json(formatCampaign(campaign, count));
 });
 
-// PATCH /campaigns/:id
-router.patch("/campaigns/:id", async (req, res) => {
+// PATCH /campaigns/:id — only owner can update
+router.patch("/campaigns/:id", requireAuth, async (req, res) => {
+  const userId = (req as any).userId;
   const { title, description, targetContacts, status, allowedCountryCode, requireWhatsapp } = req.body;
   const updates: Record<string, any> = {};
   if (title !== undefined) {
@@ -130,23 +143,25 @@ router.patch("/campaigns/:id", async (req, res) => {
   if (requireWhatsapp !== undefined) {
     updates.requireWhatsapp = requireWhatsapp === true;
   }
-  const campaign = await Campaign.findByIdAndUpdate(req.params.id, updates, { new: true }).catch(() => null);
+  const campaign = await Campaign.findOneAndUpdate({ _id: req.params.id, userId }, updates, { new: true }).catch(() => null);
   if (!campaign) { res.status(404).json({ error: "Not found" }); return; }
   const count = await Contact.countDocuments({ campaignId: campaign._id });
   res.json(formatCampaign(campaign, count));
 });
 
-// DELETE /campaigns/:id
-router.delete("/campaigns/:id", async (req, res) => {
-  const campaign = await Campaign.findByIdAndDelete(req.params.id).catch(() => null);
+// DELETE /campaigns/:id — only owner can delete
+router.delete("/campaigns/:id", requireAuth, async (req, res) => {
+  const userId = (req as any).userId;
+  const campaign = await Campaign.findOneAndDelete({ _id: req.params.id, userId }).catch(() => null);
   if (!campaign) { res.status(404).json({ error: "Not found" }); return; }
   await Contact.deleteMany({ campaignId: campaign._id });
   res.status(204).end();
 });
 
-// GET /campaigns/:id/vcf
-router.get("/campaigns/:id/vcf", async (req, res) => {
-  const campaign = await Campaign.findById(req.params.id).catch(() => null);
+// GET /campaigns/:id/vcf — only owner
+router.get("/campaigns/:id/vcf", requireAuth, async (req, res) => {
+  const userId = (req as any).userId;
+  const campaign = await Campaign.findOne({ _id: req.params.id, userId }).catch(() => null);
   if (!campaign) { res.status(404).json({ error: "Not found" }); return; }
   const collected = await Contact.countDocuments({ campaignId: campaign._id });
   if (collected < campaign.targetContacts) {
@@ -167,13 +182,16 @@ router.get("/campaigns/:id/vcf", async (req, res) => {
   res.send(vcfLines);
 });
 
-// GET /campaigns/:id/contacts
-router.get("/campaigns/:id/contacts", async (req, res) => {
-  const contacts = await Contact.find({ campaignId: req.params.id });
+// GET /campaigns/:id/contacts — only owner
+router.get("/campaigns/:id/contacts", requireAuth, async (req, res) => {
+  const userId = (req as any).userId;
+  const campaign = await Campaign.findOne({ _id: req.params.id, userId }).catch(() => null);
+  if (!campaign) { res.status(404).json({ error: "Not found" }); return; }
+  const contacts = await Contact.find({ campaignId: campaign._id });
   res.json(contacts);
 });
 
-// POST /campaigns/:id/contacts (public submission)
+// POST /campaigns/:id/contacts (public submission — no auth required)
 router.post("/campaigns/:id/contacts", async (req, res) => {
   const campaign = await Campaign.findById(req.params.id).catch(() => null);
   if (!campaign) { res.status(404).json({ error: "Campaign not found" }); return; }
