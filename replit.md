@@ -13,16 +13,15 @@ White background (#ffffff) with green (#16a34a) accent — `hsl(142 72% 36%)` as
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- Required env: `MONGODB_URI` — MongoDB connection string
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
 - Frontend: React + Vite, Tailwind CSS, shadcn/ui, framer-motion, wouter, Recharts
 - API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
+- DB: MongoDB + Mongoose
+- Validation: Zod (`zod/v4`)
 - API codegen: Orval (from OpenAPI spec)
 - Build: esbuild (CJS bundle)
 - Theme: Black (#0B0B0B) background, orange (#FF6A00) accent
@@ -30,8 +29,8 @@ White background (#ffffff) with green (#16a34a) accent — `hsl(142 72% 36%)` as
 ## Where things live
 
 - `lib/api-spec/openapi.yaml` — single source of truth for all API contracts
-- `lib/db/src/schema/campaigns.ts` — campaigns table (status enum: draft/active/completed)
-- `lib/db/src/schema/contacts.ts` — contacts table (FK to campaigns, cascade delete)
+- `artifacts/api-server/src/lib/models.ts` — Mongoose schemas (Campaign, Contact)
+- `artifacts/api-server/src/lib/mongodb.ts` — MongoDB connection (requires MONGODB_URI)
 - `artifacts/api-server/src/routes/campaigns.ts` — CRUD + VCF download + contact submission
 - `artifacts/api-server/src/routes/dashboard.ts` — stats + analytics endpoints
 - `artifacts/firebox-dashboard/src/` — React frontend (pages/, components/)
@@ -62,7 +61,6 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 - After any `lib/*` schema changes, run `pnpm run typecheck:libs` before leaf artifact typechecks to refresh declarations
 - After any `lib/api-spec/openapi.yaml` changes, run `pnpm --filter @workspace/api-spec run codegen`
-- The `@workspace/db` lib exports are only updated after `tsc --build` (via typecheck:libs)
 - Do NOT import from internal package paths (e.g. `@workspace/api-client-react/src/generated/...`) — use the public barrel export only
 
 ## Pointers
