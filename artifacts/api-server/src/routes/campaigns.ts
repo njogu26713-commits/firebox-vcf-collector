@@ -69,6 +69,20 @@ router.post("/campaigns", async (req, res) => {
   res.status(201).json(formatCampaign(campaign, 0));
 });
 
+// GET /campaigns/by-token/:token (public — used by the submission page)
+router.get("/campaigns/by-token/:token", async (req, res) => {
+  let campaign;
+  try {
+    campaign = await Campaign.findOne({ shareToken: req.params.token });
+  } catch {
+    res.status(503).json({ error: "Service temporarily unavailable" });
+    return;
+  }
+  if (!campaign) { res.status(404).json({ error: "Campaign not found" }); return; }
+  const count = await Contact.countDocuments({ campaignId: campaign._id });
+  res.json(formatCampaign(campaign, count));
+});
+
 // GET /campaigns/:id
 router.get("/campaigns/:id", async (req, res) => {
   const campaign = await Campaign.findById(req.params.id).catch(() => null);

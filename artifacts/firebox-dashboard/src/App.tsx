@@ -9,6 +9,7 @@ import Campaigns from '@/pages/campaigns';
 import CreateCampaign from '@/pages/create-campaign';
 import Analytics from '@/pages/analytics';
 import Settings from '@/pages/settings';
+import SubmitPage from '@/pages/submit';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -21,17 +22,25 @@ const queryClient = new QueryClient({
 
 function Router() {
   return (
-    <Layout>
-      <Switch>
-        <Route path="/" component={Dashboard} />
-        <Route path="/campaigns" component={Campaigns} />
-        <Route path="/create" component={CreateCampaign} />
-        <Route path="/edit/:id" component={CreateCampaign} />
-        <Route path="/analytics" component={Analytics} />
-        <Route path="/settings" component={Settings} />
-        <Route component={NotFound} />
-      </Switch>
-    </Layout>
+    <Switch>
+      {/* Public submission page — no dashboard layout */}
+      <Route path="/submit/:token" component={SubmitPage} />
+
+      {/* Dashboard routes */}
+      <Route>
+        <Layout>
+          <Switch>
+            <Route path="/" component={Dashboard} />
+            <Route path="/campaigns" component={Campaigns} />
+            <Route path="/create" component={CreateCampaign} />
+            <Route path="/edit/:id" component={CreateCampaign} />
+            <Route path="/analytics" component={Analytics} />
+            <Route path="/settings" component={Settings} />
+            <Route component={NotFound} />
+          </Switch>
+        </Layout>
+      </Route>
+    </Switch>
   );
 }
 
