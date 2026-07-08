@@ -1,0 +1,5 @@
+[build]
+buildCommand = "pnpm install && BASE_PATH=/ pnpm --filter @workspace/firebox-dashboard run build && pnpm --filter @workspace/api-server run build"
+
+[deploy]
+startCommand = "pnpm --filter @workspace/api-server run start"
