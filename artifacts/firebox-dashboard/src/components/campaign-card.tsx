@@ -24,9 +24,11 @@ export function CampaignCard({ campaign, index = 0 }: { campaign: Campaign; inde
   const queryClient = useQueryClient();
   const deleteMutation = useDeleteCampaign();
 
+  const shareUrl = `${window.location.origin}${import.meta.env.BASE_URL.replace(/\/$/, '')}/submit/${campaign.shareToken}`;
+
   const handleCopyLink = async () => {
     try {
-      await navigator.clipboard.writeText(campaign.shareLink);
+      await navigator.clipboard.writeText(shareUrl);
       toast({ title: 'Link copied to clipboard!' });
     } catch (err) {
       toast({ title: 'Failed to copy link', variant: 'destructive' });
@@ -130,7 +132,7 @@ export function CampaignCard({ campaign, index = 0 }: { campaign: Campaign; inde
             <Copy className="w-4 h-4" />
           </button>
           <a 
-            href={campaign.shareLink} 
+            href={shareUrl} 
             target="_blank" 
             rel="noopener noreferrer"
             className={`p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors outline-none ${isDraft ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
