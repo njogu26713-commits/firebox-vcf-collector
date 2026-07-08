@@ -109,12 +109,12 @@ export default function CreateCampaign() {
       >
         <button 
           onClick={() => setLocation('/campaigns')}
-          className="p-2 bg-card hover:bg-secondary border border-border rounded-lg transition-colors outline-none text-muted-foreground hover:text-white"
+          className="p-2 bg-card hover:bg-secondary border border-border rounded-lg transition-colors outline-none text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-white mb-1">
+          <h1 className="text-3xl font-extrabold tracking-tight text-foreground mb-1">
             {isEdit ? 'Edit Campaign' : 'Create New VCF'}
           </h1>
           <p className="text-muted-foreground">
@@ -136,11 +136,11 @@ export default function CreateCampaign() {
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white text-base">Campaign Title</FormLabel>
+                    <FormLabel className="text-foreground text-base">Campaign Title</FormLabel>
                     <FormControl>
                       <Input 
                         placeholder="e.g. Summer Networking Event" 
-                        className="bg-[#0B0B0B] border-border text-white h-12 px-4 focus-visible:ring-primary/50" 
+                        className="bg-background border-border text-foreground h-12 px-4 focus-visible:ring-primary/50" 
                         {...field} 
                       />
                     </FormControl>
@@ -154,11 +154,11 @@ export default function CreateCampaign() {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white text-base">Description (Optional)</FormLabel>
+                    <FormLabel className="text-foreground text-base">Description (Optional)</FormLabel>
                     <FormControl>
                       <Textarea 
                         placeholder="Tell visitors what they will get by unlocking this VCF..." 
-                        className="bg-[#0B0B0B] border-border text-white min-h-[100px] p-4 focus-visible:ring-primary/50 resize-y" 
+                        className="bg-background border-border text-foreground min-h-[100px] p-4 focus-visible:ring-primary/50 resize-y" 
                         {...field} 
                       />
                     </FormControl>
@@ -173,12 +173,12 @@ export default function CreateCampaign() {
                   name="targetContacts"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-white text-base">Target Contacts</FormLabel>
+                      <FormLabel className="text-foreground text-base">Target Contacts</FormLabel>
                       <FormControl>
                         <Input 
                           type="number"
                           placeholder="100" 
-                          className="bg-[#0B0B0B] border-border text-white h-12 px-4 focus-visible:ring-primary/50" 
+                          className="bg-background border-border text-foreground h-12 px-4 focus-visible:ring-primary/50" 
                           {...field} 
                         />
                       </FormControl>
@@ -192,17 +192,17 @@ export default function CreateCampaign() {
                   name="status"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-white text-base">Initial Status</FormLabel>
+                      <FormLabel className="text-foreground text-base">Initial Status</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
                         <FormControl>
-                          <SelectTrigger className="bg-[#0B0B0B] border-border text-white h-12 px-4 focus:ring-primary/50">
+                          <SelectTrigger className="bg-background border-border text-foreground h-12 px-4 focus:ring-primary/50">
                             <SelectValue placeholder="Select a status" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent className="bg-card border-border">
-                          <SelectItem value="draft" className="text-white focus:bg-secondary focus:text-white">Draft (Not visible)</SelectItem>
-                          <SelectItem value="active" className="text-white focus:bg-secondary focus:text-white">Active (Collecting)</SelectItem>
-                          <SelectItem value="completed" className="text-white focus:bg-secondary focus:text-white">Completed</SelectItem>
+                          <SelectItem value="draft" className="text-foreground focus:bg-secondary focus:text-foreground">Draft (Not visible)</SelectItem>
+                          <SelectItem value="active" className="text-foreground focus:bg-secondary focus:text-foreground">Active (Collecting)</SelectItem>
+                          <SelectItem value="completed" className="text-foreground focus:bg-secondary focus:text-foreground">Completed</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage className="text-destructive" />
@@ -216,14 +216,14 @@ export default function CreateCampaign() {
               <Button 
                 type="button" 
                 variant="ghost" 
-                className="text-muted-foreground hover:text-white hover:bg-secondary"
+                className="text-muted-foreground hover:text-foreground hover:bg-secondary"
                 onClick={() => setLocation('/campaigns')}
               >
                 Cancel
               </Button>
               <Button 
                 type="submit" 
-                className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-8 h-12 flex items-center gap-2 shadow-[0_0_15px_rgba(255,106,0,0.2)] hover:shadow-[0_0_20px_rgba(255,106,0,0.4)] transition-all"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-8 h-12 flex items-center gap-2 shadow-[0_0_15px_rgba(22,163,74,0.2)] hover:shadow-[0_0_20px_rgba(22,163,74,0.4)] transition-all"
                 disabled={isPending}
               >
                 {isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Flame className="w-5 h-5" />}

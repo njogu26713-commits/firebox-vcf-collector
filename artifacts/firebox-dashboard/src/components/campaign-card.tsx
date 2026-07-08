@@ -67,21 +67,21 @@ export function CampaignCard({ campaign, index = 0 }: { campaign: Campaign; inde
       className={`
         relative bg-card rounded-[18px] border border-border p-6 flex flex-col gap-5
         hover:shadow-lg transition-all duration-300 group
-        ${isActive ? 'border-l-[3px] border-l-primary hover:shadow-[0_4px_30px_rgba(255,106,0,0.12)]' : ''}
+        ${isActive ? 'border-l-[3px] border-l-primary hover:shadow-[0_4px_30px_rgba(22,163,74,0.12)]' : ''}
         ${isCompleted ? 'border-l-[3px] border-l-green-500/50' : ''}
       `}
       data-testid={`campaign-card-${campaign.id}`}
     >
       <div className="flex justify-between items-start gap-4">
         <div className="min-w-0 flex-1">
-          <h3 className="font-bold text-lg text-white truncate" title={campaign.title}>{campaign.title}</h3>
+          <h3 className="font-bold text-lg text-foreground truncate" title={campaign.title}>{campaign.title}</h3>
           <p className="text-xs text-muted-foreground mt-1">
             Created {format(new Date(campaign.createdAt), 'MMM d, yyyy')}
           </p>
         </div>
         <div className={`px-2.5 py-1 rounded-full text-xs font-semibold border whitespace-nowrap
           ${isDraft ? 'bg-secondary text-muted-foreground border-border' : ''}
-          ${isActive ? 'bg-primary/10 text-primary border-primary/20 shadow-[0_0_10px_rgba(255,106,0,0.2)]' : ''}
+          ${isActive ? 'bg-primary/10 text-primary border-primary/20 shadow-[0_0_10px_rgba(22,163,74,0.2)]' : ''}
           ${isCompleted ? 'bg-green-500/10 text-green-400 border-green-500/20' : ''}
         `}>
           {campaign.status.charAt(0).toUpperCase() + campaign.status.slice(1)}
@@ -91,29 +91,29 @@ export function CampaignCard({ campaign, index = 0 }: { campaign: Campaign; inde
       <div className="grid grid-cols-3 gap-2 py-3 border-y border-border/50">
         <div className="flex flex-col">
           <span className="text-xs text-muted-foreground mb-1">Target</span>
-          <span className="font-bold text-white text-lg leading-none">{campaign.targetContacts}</span>
+          <span className="font-bold text-foreground text-lg leading-none">{campaign.targetContacts}</span>
         </div>
         <div className="flex flex-col">
           <span className="text-xs text-muted-foreground mb-1">Collected</span>
-          <span className="font-bold text-white text-lg leading-none">{campaign.contactsCollected}</span>
+          <span className="font-bold text-foreground text-lg leading-none">{campaign.contactsCollected}</span>
         </div>
         <div className="flex flex-col">
           <span className="text-xs text-muted-foreground mb-1">Remaining</span>
-          <span className="font-bold text-white text-lg leading-none">{Math.max(0, campaign.targetContacts - campaign.contactsCollected)}</span>
+          <span className="font-bold text-foreground text-lg leading-none">{Math.max(0, campaign.targetContacts - campaign.contactsCollected)}</span>
         </div>
       </div>
 
       <div className="space-y-2">
         <div className="flex justify-between text-xs">
           <span className="text-muted-foreground font-medium">Progress</span>
-          <span className="text-white font-bold">{percent}%</span>
+          <span className="text-foreground font-bold">{percent}%</span>
         </div>
         <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
           <motion.div 
             initial={{ width: 0 }}
             animate={{ width: `${percent}%` }}
             transition={{ duration: 1, ease: "easeOut" }}
-            className={`h-full rounded-full ${isCompleted ? 'bg-green-500' : 'bg-primary shadow-[0_0_8px_rgba(255,106,0,0.5)]'}`}
+            className={`h-full rounded-full ${isCompleted ? 'bg-green-500' : 'bg-primary shadow-[0_0_8px_rgba(22,163,74,0.4)]'}`}
           />
         </div>
       </div>
@@ -123,7 +123,7 @@ export function CampaignCard({ campaign, index = 0 }: { campaign: Campaign; inde
           <button 
             onClick={handleCopyLink}
             disabled={isDraft}
-            className="p-2 text-muted-foreground hover:text-white hover:bg-secondary rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed outline-none"
+            className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed outline-none"
             title="Copy Link"
             data-testid={`btn-copy-${campaign.id}`}
           >
@@ -133,7 +133,7 @@ export function CampaignCard({ campaign, index = 0 }: { campaign: Campaign; inde
             href={campaign.shareLink} 
             target="_blank" 
             rel="noopener noreferrer"
-            className={`p-2 text-muted-foreground hover:text-white hover:bg-secondary rounded-lg transition-colors outline-none ${isDraft ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
+            className={`p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors outline-none ${isDraft ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
             title="Open Share Link"
             data-testid={`link-share-${campaign.id}`}
           >
@@ -155,7 +155,7 @@ export function CampaignCard({ campaign, index = 0 }: { campaign: Campaign; inde
         <div className="flex items-center gap-1.5">
           <Link 
             href={`/edit/${campaign.id}`}
-            className="p-2 text-muted-foreground hover:text-white hover:bg-secondary rounded-lg transition-colors outline-none"
+            className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors outline-none"
             title="Edit Campaign"
             data-testid={`link-edit-${campaign.id}`}
           >
@@ -174,13 +174,13 @@ export function CampaignCard({ campaign, index = 0 }: { campaign: Campaign; inde
             </AlertDialogTrigger>
             <AlertDialogContent className="bg-card border-border shadow-2xl">
               <AlertDialogHeader>
-                <AlertDialogTitle className="text-white">Delete Campaign</AlertDialogTitle>
+                <AlertDialogTitle className="text-foreground">Delete Campaign</AlertDialogTitle>
                 <AlertDialogDescription className="text-muted-foreground">
                   Are you sure you want to delete "{campaign.title}"? This action cannot be undone and will delete all collected contacts.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel className="bg-secondary text-white hover:bg-secondary/80 border-0">Cancel</AlertDialogCancel>
+                <AlertDialogCancel className="bg-secondary text-foreground hover:bg-secondary/80 border-0">Cancel</AlertDialogCancel>
                 <AlertDialogAction 
                   onClick={handleDelete}
                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"

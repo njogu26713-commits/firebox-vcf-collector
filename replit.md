@@ -2,6 +2,10 @@
 
 A premium SaaS dashboard for managing VCF (contact card) campaigns. One registered user manages multiple campaigns where visitors submit their name and phone via a unique share link, and a VCF file unlocks automatically when the target contact count is reached.
 
+## Theme
+
+White background (#ffffff) with green (#16a34a) accent — `hsl(142 72% 36%)` as `--primary` throughout. All CSS variables updated in `artifacts/firebox-dashboard/src/index.css`. Hardcoded dark colors replaced with `bg-background`, `text-foreground`, etc.
+
 ## Run & Operate
 
 - `pnpm --filter @workspace/api-server run dev` — run the API server (port 8080, proxied at `/api`)

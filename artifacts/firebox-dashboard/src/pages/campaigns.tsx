@@ -23,12 +23,12 @@ export default function Campaigns() {
     <div className="space-y-8 pb-10">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-white mb-2">My VCF Campaigns</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight text-foreground mb-2">My VCF Campaigns</h1>
           <p className="text-muted-foreground">Manage your locked contact cards and track progress.</p>
         </div>
         <Link 
           href="/create"
-          className="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-5 py-2.5 rounded-lg font-medium transition-all hover:shadow-[0_0_15px_rgba(255,106,0,0.3)] outline-none"
+          className="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-5 py-2.5 rounded-lg font-medium transition-all hover:shadow-[0_0_15px_rgba(22,163,74,0.3)] outline-none"
         >
           <PlusCircle className="w-5 h-5" />
           New Campaign
@@ -43,7 +43,7 @@ export default function Campaigns() {
              onClick={() => setFilter(tab.id as any)} 
              className={`
                px-5 py-2 rounded-lg text-sm font-semibold transition-all outline-none relative
-               ${filter === tab.id ? 'text-white' : 'text-muted-foreground hover:text-white hover:bg-secondary/50'}
+               ${filter === tab.id ? 'text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'}
              `}
            >
              {filter === tab.id && (
@@ -77,7 +77,7 @@ export default function Campaigns() {
                 <div className="w-20 h-20 rounded-full bg-secondary flex items-center justify-center mb-6">
                   <SearchX className="w-10 h-10 text-muted-foreground" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">No campaigns found</h3>
+                <h3 className="text-xl font-bold text-foreground mb-2">No campaigns found</h3>
                 <p className="text-muted-foreground max-w-sm mb-6">
                   {filter === 'all' 
                     ? "You haven't created any campaigns yet." 
@@ -86,7 +86,7 @@ export default function Campaigns() {
                 {filter !== 'all' && (
                   <button 
                     onClick={() => setFilter('all')}
-                    className="text-primary hover:text-white font-medium transition-colors"
+                    className="text-primary hover:text-primary/80 font-medium transition-colors"
                   >
                     View all campaigns
                   </button>
