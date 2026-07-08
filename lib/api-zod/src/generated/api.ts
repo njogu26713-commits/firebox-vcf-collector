@@ -32,6 +32,7 @@ export const ListCampaignsResponseItem = zod.object({
   "shareToken": zod.string(),
   "shareLink": zod.string(),
   "vcfDownloaded": zod.boolean().optional(),
+  "allowedCountryCode": zod.string().nullish().describe('ISO 3166-1 alpha-2 country code. Null means all countries are allowed.'),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
@@ -49,7 +50,8 @@ export const CreateCampaignBody = zod.object({
   "title": zod.string().min(1),
   "description": zod.string().optional(),
   "targetContacts": zod.number().min(1),
-  "status": zod.enum(['draft', 'active', 'completed']).optional()
+  "status": zod.enum(['draft', 'active', 'completed']).optional(),
+  "allowedCountryCode": zod.string().nullish().describe('ISO 3166-1 alpha-2 country code. Null means all countries are allowed.')
 })
 
 export const CreateCampaignResponse = zod.object({
@@ -64,6 +66,7 @@ export const CreateCampaignResponse = zod.object({
   "shareToken": zod.string(),
   "shareLink": zod.string(),
   "vcfDownloaded": zod.boolean().optional(),
+  "allowedCountryCode": zod.string().nullish().describe('ISO 3166-1 alpha-2 country code. Null means all countries are allowed.'),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
@@ -88,6 +91,7 @@ export const GetCampaignResponse = zod.object({
   "shareToken": zod.string(),
   "shareLink": zod.string(),
   "vcfDownloaded": zod.boolean().optional(),
+  "allowedCountryCode": zod.string().nullish().describe('ISO 3166-1 alpha-2 country code. Null means all countries are allowed.'),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
@@ -108,7 +112,8 @@ export const UpdateCampaignBody = zod.object({
   "title": zod.string().min(1).optional(),
   "description": zod.string().optional(),
   "targetContacts": zod.number().min(1).optional(),
-  "status": zod.enum(['draft', 'active', 'completed']).optional()
+  "status": zod.enum(['draft', 'active', 'completed']).optional(),
+  "allowedCountryCode": zod.string().nullish().describe('ISO 3166-1 alpha-2 country code. Null means all countries are allowed.')
 })
 
 export const UpdateCampaignResponse = zod.object({
@@ -123,6 +128,7 @@ export const UpdateCampaignResponse = zod.object({
   "shareToken": zod.string(),
   "shareLink": zod.string(),
   "vcfDownloaded": zod.boolean().optional(),
+  "allowedCountryCode": zod.string().nullish().describe('ISO 3166-1 alpha-2 country code. Null means all countries are allowed.'),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })

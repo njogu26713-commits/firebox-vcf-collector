@@ -20,6 +20,11 @@ export interface Campaign {
   shareToken: string;
   shareLink: string;
   vcfDownloaded?: boolean;
+  /**
+     * ISO 3166-1 alpha-2 country code. Null means all countries are allowed.
+     * @nullable
+     */
+  allowedCountryCode?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }

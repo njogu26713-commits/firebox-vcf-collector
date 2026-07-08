@@ -31,6 +31,11 @@ export interface Campaign {
   shareToken: string;
   shareLink: string;
   vcfDownloaded?: boolean;
+  /**
+     * ISO 3166-1 alpha-2 country code. Null means all countries are allowed.
+     * @nullable
+     */
+  allowedCountryCode?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -51,6 +56,11 @@ export interface CampaignInput {
   /** @minimum 1 */
   targetContacts: number;
   status?: CampaignInputStatus;
+  /**
+     * ISO 3166-1 alpha-2 country code. Null means all countries are allowed.
+     * @nullable
+     */
+  allowedCountryCode?: string | null;
 }
 
 export type CampaignUpdateStatus = typeof CampaignUpdateStatus[keyof typeof CampaignUpdateStatus];
@@ -69,6 +79,11 @@ export interface CampaignUpdate {
   /** @minimum 1 */
   targetContacts?: number;
   status?: CampaignUpdateStatus;
+  /**
+     * ISO 3166-1 alpha-2 country code. Null means all countries are allowed.
+     * @nullable
+     */
+  allowedCountryCode?: string | null;
 }
 
 export interface Contact {

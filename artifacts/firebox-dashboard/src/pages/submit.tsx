@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useParams } from 'wouter';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Flame, CheckCircle2, AlertCircle, Loader2, Users, Target } from 'lucide-react';
+import { Flame, CheckCircle2, AlertCircle, Loader2, Users, Target, Globe } from 'lucide-react';
+import { getCountryByCode } from '@/lib/countries';
 
 const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, '');
 
@@ -195,12 +196,26 @@ export default function SubmitPage() {
                 <label className="text-sm font-medium text-foreground" htmlFor="phone">
                   Phone number
                 </label>
+                {campaign.allowedCountryCode ? (() => {
+                  const country = getCountryByCode(campaign.allowedCountryCode);
+                  return (
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground bg-secondary border border-border rounded-lg px-3 py-2">
+                      <Globe className="w-3.5 h-3.5 flex-shrink-0" />
+                      <span>
+                        Only {country ? `${country.flag} ${country.name} (${country.dialCode})` : campaign.allowedCountryCode} numbers accepted.
+                        Include your dial code, e.g. <span className="font-mono font-semibold text-foreground">{country?.dialCode ?? '+'} 800 000 0000</span>
+                      </span>
+                    </div>
+                  );
+                })() : (
+                  <p className="text-xs text-muted-foreground">Include your country dial code, e.g. +1 555 000 0000</p>
+                )}
                 <input
                   id="phone"
                   type="tel"
                   required
                   autoComplete="tel"
-                  placeholder="+1 555 000 0000"
+                  placeholder={campaign.allowedCountryCode ? `${getCountryByCode(campaign.allowedCountryCode)?.dialCode ?? '+'} 000 000 0000` : '+1 555 000 0000'}
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
                   className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition"

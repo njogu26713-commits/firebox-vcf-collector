@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation, useParams } from 'wouter';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -11,14 +11,16 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Flame, ArrowLeft, Loader2 } from 'lucide-react';
+import { Flame, ArrowLeft, Loader2, Globe, Search } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { COUNTRIES, getCountryByCode } from '@/lib/countries';
 
 const formSchema = z.object({
   title: z.string().min(1, 'Title is required').max(100, 'Title is too long'),
   description: z.string().max(500, 'Description is too long').optional().default(''),
   targetContacts: z.coerce.number().min(1, 'Target must be at least 1').max(1000000, 'Target too large'),
   status: z.enum(['draft', 'active', 'completed']).default('draft'),
+  allowedCountryCode: z.string().nullable().default(null),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -35,6 +37,9 @@ export default function CreateCampaign() {
   const createMutation = useCreateCampaign();
   const updateMutation = useUpdateCampaign();
 
+  const [countrySearch, setCountrySearch] = useState('');
+  const [countryDropdownOpen, setCountryDropdownOpen] = useState(false);
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -42,6 +47,7 @@ export default function CreateCampaign() {
       description: '',
       targetContacts: 100,
       status: 'draft',
+      allowedCountryCode: null,
     },
   });
 
@@ -59,6 +65,7 @@ export default function CreateCampaign() {
         description: existing.description || '',
         targetContacts: existing.targetContacts,
         status: existing.status as any,
+        allowedCountryCode: (existing as any).allowedCountryCode ?? null,
       });
     }
   }, [existing, form, isEdit]);
@@ -210,6 +217,100 @@ export default function CreateCampaign() {
                   )}
                 />
               </div>
+
+              {/* Country restriction */}
+              <FormField
+                control={form.control}
+                name="allowedCountryCode"
+                render={({ field }) => {
+                  const selectedCountry = field.value ? getCountryByCode(field.value) : null;
+                  const filteredCountries = COUNTRIES.filter(c =>
+                    c.name.toLowerCase().includes(countrySearch.toLowerCase()) ||
+                    c.dialCode.includes(countrySearch) ||
+                    c.code.toLowerCase().includes(countrySearch.toLowerCase())
+                  );
+                  return (
+                    <FormItem>
+                      <FormLabel className="text-foreground text-base">Allowed Country</FormLabel>
+                      <p className="text-sm text-muted-foreground -mt-1">
+                        Submissions from other countries will be rejected.
+                      </p>
+                      <div className="space-y-3">
+                        {/* Mode toggle */}
+                        <div className="flex rounded-xl border border-border overflow-hidden">
+                          <button
+                            type="button"
+                            onClick={() => { field.onChange(null); setCountryDropdownOpen(false); }}
+                            className={`flex-1 py-2.5 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+                              !field.value
+                                ? 'bg-primary text-primary-foreground'
+                                : 'bg-background text-muted-foreground hover:text-foreground hover:bg-secondary'
+                            }`}
+                          >
+                            <Globe className="w-4 h-4" />
+                            All countries
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setCountryDropdownOpen(true)}
+                            className={`flex-1 py-2.5 text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+                              field.value
+                                ? 'bg-primary text-primary-foreground'
+                                : 'bg-background text-muted-foreground hover:text-foreground hover:bg-secondary'
+                            }`}
+                          >
+                            {selectedCountry ? (
+                              <>{selectedCountry.flag} {selectedCountry.name}</>
+                            ) : (
+                              'Specific country'
+                            )}
+                          </button>
+                        </div>
+
+                        {/* Country picker dropdown */}
+                        {(countryDropdownOpen || field.value) && (
+                          <div className="border border-border rounded-xl bg-background overflow-hidden">
+                            <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
+                              <Search className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                              <input
+                                type="text"
+                                placeholder="Search country..."
+                                value={countrySearch}
+                                onChange={e => setCountrySearch(e.target.value)}
+                                className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
+                              />
+                            </div>
+                            <div className="max-h-48 overflow-y-auto">
+                              {filteredCountries.map(country => (
+                                <button
+                                  key={country.code}
+                                  type="button"
+                                  onClick={() => {
+                                    field.onChange(country.code);
+                                    setCountrySearch('');
+                                    setCountryDropdownOpen(false);
+                                  }}
+                                  className={`w-full text-left px-4 py-2.5 text-sm flex items-center gap-3 hover:bg-secondary transition-colors ${
+                                    field.value === country.code ? 'bg-primary/10 text-primary font-medium' : 'text-foreground'
+                                  }`}
+                                >
+                                  <span className="text-base">{country.flag}</span>
+                                  <span className="flex-1">{country.name}</span>
+                                  <span className="text-muted-foreground text-xs">{country.dialCode}</span>
+                                </button>
+                              ))}
+                              {filteredCountries.length === 0 && (
+                                <p className="px-4 py-3 text-sm text-muted-foreground">No countries found.</p>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <FormMessage className="text-destructive" />
+                    </FormItem>
+                  );
+                }}
+              />
             </div>
 
             <div className="pt-6 mt-6 border-t border-border flex items-center justify-end gap-4">

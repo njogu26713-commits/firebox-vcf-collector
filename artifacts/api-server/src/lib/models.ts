@@ -19,6 +19,7 @@ const campaignSchema = new Schema(
     targetContacts: { type: Number, required: true },
     shareToken: { type: String, required: true, unique: true },
     vcfDownloaded: { type: Boolean, default: false },
+    allowedCountryCode: { type: String, default: null },
   },
   { timestamps: true }
 );

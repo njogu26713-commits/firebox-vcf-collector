@@ -14,4 +14,9 @@ export interface CampaignInput {
   /** @minimum 1 */
   targetContacts: number;
   status?: CampaignInputStatus;
+  /**
+     * ISO 3166-1 alpha-2 country code. Null means all countries are allowed.
+     * @nullable
+     */
+  allowedCountryCode?: string | null;
 }
