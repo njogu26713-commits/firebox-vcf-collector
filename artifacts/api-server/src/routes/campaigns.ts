@@ -1,8 +1,10 @@
 import { Router } from "express";
 import { randomBytes } from "crypto";
 import { parsePhoneNumberFromString } from "libphonenumber-js";
-import { Campaign, Contact } from "../lib/models";
+import bcrypt from "bcryptjs";
+import { Campaign, Contact, Otp } from "../lib/models";
 import { requireAuth } from "../middlewares/requireAuth";
+import { sendOtpSms } from "../lib/sms";
 
 const router = Router();
 
@@ -194,6 +196,138 @@ router.get("/campaigns/:id/contacts", requireAuth, async (req, res) => {
   if (!campaign) { res.status(404).json({ error: "Not found" }); return; }
   const contacts = await Contact.find({ campaignId: campaign._id });
   res.json(contacts);
+});
+
+// POST /campaigns/:id/contacts/send-otp (public — step 1 of verified submission)
+router.post("/campaigns/:id/contacts/send-otp", async (req, res) => {
+  const campaign = await Campaign.findById(req.params.id).catch(() => null);
+  if (!campaign) { res.status(404).json({ error: "Campaign not found" }); return; }
+  if (campaign.status !== "active") { res.status(400).json({ error: "Campaign is not accepting submissions" }); return; }
+
+  const { phone } = req.body;
+  if (!phone || typeof phone !== "string" || phone.trim().length < 7) {
+    res.status(400).json({ error: "valid phone is required" }); return;
+  }
+  const normalizedPhone = phone.trim();
+
+  // Country code restriction check
+  if (campaign.allowedCountryCode) {
+    const parsed = parsePhoneNumberFromString(normalizedPhone);
+    if (!parsed || !parsed.isValid() || parsed.country !== campaign.allowedCountryCode) {
+      res.status(400).json({
+        error: `This campaign only accepts phone numbers from ${campaign.allowedCountryCode}. Please include your country dial code (e.g. +254 for Kenya).`,
+        code: "COUNTRY_RESTRICTED",
+        allowedCountryCode: campaign.allowedCountryCode,
+      });
+      return;
+    }
+  }
+
+  // Block already-submitted phones early
+  const alreadySubmitted = await Contact.findOne({ campaignId: campaign._id, phone: normalizedPhone });
+  if (alreadySubmitted) {
+    res.status(409).json({ error: "This phone number has already been submitted to this campaign" }); return;
+  }
+
+  // Rate-limit: if a fresh (non-expired) OTP already exists for this phone+campaign, don't resend yet
+  const existingOtp = await Otp.findOne({ phone: normalizedPhone, campaignId: campaign._id, verified: false });
+  if (existingOtp) {
+    const ageMs = Date.now() - existingOtp.createdAt.getTime();
+    if (ageMs < 60_000) {
+      // Less than 1 minute since last send — tell the client to wait
+      res.status(429).json({ error: "A code was already sent. Please wait a moment before requesting another." }); return;
+    }
+    // Older than 1 minute — delete and resend
+    await Otp.deleteOne({ _id: existingOtp._id });
+  }
+
+  // Generate 6-digit code
+  const code = String(Math.floor(100_000 + Math.random() * 900_000));
+  const hash = await bcrypt.hash(code, 8);
+  const expiresAt = new Date(Date.now() + 5 * 60_000); // 5 minutes
+
+  await Otp.create({ phone: normalizedPhone, campaignId: campaign._id, code: hash, expiresAt });
+
+  try {
+    await sendOtpSms(normalizedPhone, code);
+  } catch (err: any) {
+    // Remove the stored OTP so the user can retry
+    await Otp.deleteOne({ phone: normalizedPhone, campaignId: campaign._id });
+    res.status(502).json({ error: "Failed to send SMS. Please check your phone number and try again." }); return;
+  }
+
+  res.json({ message: "Verification code sent. It expires in 5 minutes." });
+});
+
+// POST /campaigns/:id/contacts/verify-otp (public — step 2 of verified submission)
+router.post("/campaigns/:id/contacts/verify-otp", async (req, res) => {
+  const campaign = await Campaign.findById(req.params.id).catch(() => null);
+  if (!campaign) { res.status(404).json({ error: "Campaign not found" }); return; }
+  if (campaign.status !== "active") { res.status(400).json({ error: "Campaign is not accepting submissions" }); return; }
+
+  const { name, phone, otp, consent } = req.body;
+  if (!name || typeof name !== "string" || name.trim().length === 0) {
+    res.status(400).json({ error: "name is required" }); return;
+  }
+  if (!phone || typeof phone !== "string" || phone.trim().length < 7) {
+    res.status(400).json({ error: "valid phone is required" }); return;
+  }
+  if (!otp || typeof otp !== "string" || !/^\d{6}$/.test(otp.trim())) {
+    res.status(400).json({ error: "A 6-digit verification code is required" }); return;
+  }
+  if (!consent) {
+    res.status(400).json({ error: "consent is required" }); return;
+  }
+
+  const normalizedPhone = phone.trim();
+
+  const record = await Otp.findOne({ phone: normalizedPhone, campaignId: campaign._id, verified: false });
+  if (!record) {
+    res.status(400).json({ error: "No pending verification found for this number. Please request a new code." }); return;
+  }
+  if (record.expiresAt < new Date()) {
+    await Otp.deleteOne({ _id: record._id });
+    res.status(400).json({ error: "Your verification code has expired. Please request a new one." }); return;
+  }
+  if (record.attempts >= 3) {
+    await Otp.deleteOne({ _id: record._id });
+    res.status(400).json({ error: "Too many incorrect attempts. Please request a new code." }); return;
+  }
+
+  // Check the code
+  const match = await bcrypt.compare(otp.trim(), record.code);
+  if (!match) {
+    await Otp.updateOne({ _id: record._id }, { $inc: { attempts: 1 } });
+    const remaining = 2 - record.attempts;
+    res.status(400).json({
+      error: remaining > 0
+        ? `Incorrect code. ${remaining} attempt${remaining !== 1 ? "s" : ""} remaining.`
+        : "Too many incorrect attempts. Please request a new code.",
+    });
+    return;
+  }
+
+  // Code is correct — mark verified and delete (single-use)
+  await Otp.deleteOne({ _id: record._id });
+
+  // Block duplicate phone
+  const existing = await Contact.findOne({ campaignId: campaign._id, phone: normalizedPhone });
+  if (existing) {
+    res.status(409).json({ error: "This phone number has already been submitted" }); return;
+  }
+
+  const contact = await Contact.create({
+    campaignId: campaign._id,
+    name: name.trim(),
+    phone: normalizedPhone,
+  });
+
+  const count = await Contact.countDocuments({ campaignId: campaign._id });
+  if (count >= campaign.targetContacts) {
+    await Campaign.findByIdAndUpdate(campaign._id, { status: "completed" });
+  }
+
+  res.status(201).json(contact);
 });
 
 // POST /campaigns/:id/contacts (public submission — no auth required)
