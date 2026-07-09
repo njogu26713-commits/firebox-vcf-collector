@@ -29,7 +29,25 @@ app.use(
   }),
 );
 
-app.use(cors({ credentials: true, origin: true }));
+// Restrict CORS to explicitly allowed origins only.
+// Same-origin requests (no Origin header) are always permitted.
+// Set ALLOWED_ORIGINS as a comma-separated list of origins in the environment
+// (e.g. "https://myapp.up.railway.app") to enable cross-origin access.
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim()).filter(Boolean)
+  : [];
+
+app.use(
+  cors({
+    credentials: true,
+    origin: (origin, callback) => {
+      // Same-origin requests have no Origin header — always allow.
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      callback(new Error(`CORS: origin '${origin}' is not allowed`));
+    },
+  }),
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

@@ -15,6 +15,13 @@ function formatUser(user: any) {
   };
 }
 
+/** Regenerate session ID to prevent session fixation attacks. */
+function regenerateSession(req: Express.Request): Promise<void> {
+  return new Promise((resolve, reject) => {
+    req.session.regenerate((err) => (err ? reject(err) : resolve()));
+  });
+}
+
 // POST /auth/signup
 router.post("/auth/signup", async (req, res) => {
   const { email, password, name } = req.body ?? {};
@@ -29,19 +36,26 @@ router.post("/auth/signup", async (req, res) => {
   }
 
   const normalizedEmail = email.trim().toLowerCase();
-  const existing = await User.findOne({ email: normalizedEmail });
-  if (existing) {
-    res.status(409).json({ error: "An account with this email already exists" });
-    return;
+
+  let user;
+  try {
+    const passwordHash = await bcrypt.hash(password, 10);
+    user = await User.create({
+      email: normalizedEmail,
+      passwordHash,
+      name: typeof name === "string" && name.trim() ? name.trim() : null,
+    });
+  } catch (err: any) {
+    // MongoDB duplicate-key error — email already registered.
+    if (err.code === 11000) {
+      res.status(409).json({ error: "An account with this email already exists" });
+      return;
+    }
+    throw err;
   }
 
-  const passwordHash = await bcrypt.hash(password, 10);
-  const user = await User.create({
-    email: normalizedEmail,
-    passwordHash,
-    name: typeof name === "string" && name.trim() ? name.trim() : null,
-  });
-
+  // Regenerate session ID before setting userId (prevents session fixation).
+  await regenerateSession(req);
   req.session.userId = String(user._id);
   res.status(201).json(formatUser(user));
 });
@@ -67,6 +81,8 @@ router.post("/auth/login", async (req, res) => {
     return;
   }
 
+  // Regenerate session ID before setting userId (prevents session fixation).
+  await regenerateSession(req);
   req.session.userId = String(user._id);
   res.json(formatUser(user));
 });

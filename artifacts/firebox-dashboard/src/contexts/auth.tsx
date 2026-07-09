@@ -20,17 +20,27 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+const ME_QUERY_KEY = ['/api/auth/me'] as const;
+
 function extractErrorMessage(error: unknown): string | null {
   if (!error) return null;
   if (error instanceof Error) return error.message;
   return 'Something went wrong. Please try again.';
 }
 
+function is401(error: unknown): boolean {
+  return (error as any)?.status === 401;
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
 
   const { data: user, isLoading, error: meError } = useGetCurrentUser({
-    query: { queryKey: ['/api/auth/me'], retry: false },
+    query: {
+      queryKey: ME_QUERY_KEY,
+      // Don't retry on 401 — that just means "not signed in"
+      retry: (failureCount, error) => !is401(error) && failureCount < 2,
+    },
   });
 
   const loginMutation = useLogin();
@@ -39,25 +49,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     const result = await loginMutation.mutateAsync({ data: { email, password } });
-    queryClient.clear();
-    await queryClient.setQueryData(['/api/auth/me'], result);
+    // Seed the /auth/me cache directly so there's no round-trip race,
+    // then invalidate all other queries so they refetch for the new user.
+    queryClient.setQueryData(ME_QUERY_KEY, result);
+    await queryClient.invalidateQueries({
+      predicate: (q) => q.queryKey[0] !== ME_QUERY_KEY[0],
+    });
     return result;
   };
 
   const signUp = async (email: string, password: string, name?: string) => {
     const result = await signupMutation.mutateAsync({ data: { email, password, name } });
-    queryClient.clear();
-    await queryClient.setQueryData(['/api/auth/me'], result);
+    queryClient.setQueryData(ME_QUERY_KEY, result);
+    await queryClient.invalidateQueries({
+      predicate: (q) => q.queryKey[0] !== ME_QUERY_KEY[0],
+    });
     return result;
   };
 
   const signOut = async () => {
     await logoutMutation.mutateAsync();
+    // Clear everything — no cached data should survive a sign-out.
     queryClient.clear();
   };
 
-  // A 401 from /auth/me just means "signed out" — treat as no user, not an error state.
-  const resolvedUser = meError ? null : user ?? null;
+  // Only a 401 means "not signed in". Transient network/5xx errors should not
+  // force a sign-out — preserve whatever data React Query already has cached.
+  const resolvedUser = is401(meError) ? null : (user ?? null);
 
   return (
     <AuthContext.Provider
