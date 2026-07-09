@@ -51,8 +51,8 @@ const otpSchema = new Schema(
 
 // TTL index — MongoDB removes the document automatically after expiresAt
 otpSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
-// Compound index for fast phone+campaign lookups
-otpSchema.index({ phone: 1, campaignId: 1 });
+// Unique compound index: only one active (unverified) OTP per phone+campaign at a time
+otpSchema.index({ phone: 1, campaignId: 1 }, { unique: true });
 
 export const User = models.User || model("User", userSchema);
 export const Campaign = models.Campaign || model("Campaign", campaignSchema);

@@ -229,24 +229,28 @@ router.post("/campaigns/:id/contacts/send-otp", async (req, res) => {
     res.status(409).json({ error: "This phone number has already been submitted to this campaign" }); return;
   }
 
-  // Rate-limit: if a fresh (non-expired) OTP already exists for this phone+campaign, don't resend yet
-  const existingOtp = await Otp.findOne({ phone: normalizedPhone, campaignId: campaign._id, verified: false });
-  if (existingOtp) {
-    const ageMs = Date.now() - existingOtp.createdAt.getTime();
-    if (ageMs < 60_000) {
-      // Less than 1 minute since last send — tell the client to wait
-      res.status(429).json({ error: "A code was already sent. Please wait a moment before requesting another." }); return;
-    }
-    // Older than 1 minute — delete and resend
-    await Otp.deleteOne({ _id: existingOtp._id });
-  }
+  // Delete any OTP older than 1 minute (allowing resend). If one younger exists, the unique
+  // index below will reject the insert and we return 429 — this is race-safe.
+  await Otp.deleteOne({
+    phone: normalizedPhone,
+    campaignId: campaign._id,
+    createdAt: { $lt: new Date(Date.now() - 60_000) },
+  });
 
   // Generate 6-digit code
   const code = String(Math.floor(100_000 + Math.random() * 900_000));
   const hash = await bcrypt.hash(code, 8);
   const expiresAt = new Date(Date.now() + 5 * 60_000); // 5 minutes
 
-  await Otp.create({ phone: normalizedPhone, campaignId: campaign._id, code: hash, expiresAt });
+  try {
+    await Otp.create({ phone: normalizedPhone, campaignId: campaign._id, code: hash, expiresAt });
+  } catch (err: any) {
+    if (err.code === 11000) {
+      // Duplicate key — a fresh OTP was sent less than 1 minute ago
+      res.status(429).json({ error: "A code was already sent. Please wait a moment before requesting another." }); return;
+    }
+    throw err;
+  }
 
   try {
     await sendOtpSms(normalizedPhone, code);
@@ -281,36 +285,47 @@ router.post("/campaigns/:id/contacts/verify-otp", async (req, res) => {
 
   const normalizedPhone = phone.trim();
 
-  const record = await Otp.findOne({ phone: normalizedPhone, campaignId: campaign._id, verified: false });
+  // Atomically increment attempts — if no matching document, OTP doesn't exist / already used
+  const record = await Otp.findOneAndUpdate(
+    { phone: normalizedPhone, campaignId: campaign._id, expiresAt: { $gt: new Date() }, attempts: { $lt: 3 } },
+    { $inc: { attempts: 1 } },
+    { new: false }, // return the document BEFORE increment so we can inspect pre-increment attempts
+  );
+
   if (!record) {
+    // Could be: no OTP found, already expired, or too many attempts
+    const expired = await Otp.findOne({ phone: normalizedPhone, campaignId: campaign._id, expiresAt: { $lte: new Date() } });
+    if (expired) {
+      await Otp.deleteOne({ _id: expired._id });
+      res.status(400).json({ error: "Your verification code has expired. Please request a new one." }); return;
+    }
+    const maxAttempts = await Otp.findOne({ phone: normalizedPhone, campaignId: campaign._id, attempts: { $gte: 3 } });
+    if (maxAttempts) {
+      await Otp.deleteOne({ _id: maxAttempts._id });
+      res.status(400).json({ error: "Too many incorrect attempts. Please request a new code." }); return;
+    }
     res.status(400).json({ error: "No pending verification found for this number. Please request a new code." }); return;
   }
-  if (record.expiresAt < new Date()) {
-    await Otp.deleteOne({ _id: record._id });
-    res.status(400).json({ error: "Your verification code has expired. Please request a new one." }); return;
-  }
-  if (record.attempts >= 3) {
-    await Otp.deleteOne({ _id: record._id });
-    res.status(400).json({ error: "Too many incorrect attempts. Please request a new code." }); return;
-  }
 
-  // Check the code
+  // Check the code (bcrypt compare against the stored hash)
   const match = await bcrypt.compare(otp.trim(), record.code);
   if (!match) {
-    await Otp.updateOne({ _id: record._id }, { $inc: { attempts: 1 } });
-    const remaining = 2 - record.attempts;
+    const attemptsUsed = record.attempts + 1; // post-increment value
+    const remaining = 3 - attemptsUsed;
+    if (remaining <= 0) {
+      await Otp.deleteOne({ _id: record._id });
+      res.status(400).json({ error: "Too many incorrect attempts. Please request a new code." }); return;
+    }
     res.status(400).json({
-      error: remaining > 0
-        ? `Incorrect code. ${remaining} attempt${remaining !== 1 ? "s" : ""} remaining.`
-        : "Too many incorrect attempts. Please request a new code.",
+      error: `Incorrect code. ${remaining} attempt${remaining !== 1 ? "s" : ""} remaining.`,
     });
     return;
   }
 
-  // Code is correct — mark verified and delete (single-use)
-  await Otp.deleteOne({ _id: record._id });
+  // Code is correct — atomically delete (single-use guarantee)
+  await Otp.findOneAndDelete({ _id: record._id });
 
-  // Block duplicate phone
+  // Block duplicate phone (race-safe via unique index on Contact if needed)
   const existing = await Contact.findOne({ campaignId: campaign._id, phone: normalizedPhone });
   if (existing) {
     res.status(409).json({ error: "This phone number has already been submitted" }); return;
@@ -330,54 +345,11 @@ router.post("/campaigns/:id/contacts/verify-otp", async (req, res) => {
   res.status(201).json(contact);
 });
 
-// POST /campaigns/:id/contacts (public submission — no auth required)
-router.post("/campaigns/:id/contacts", async (req, res) => {
-  const campaign = await Campaign.findById(req.params.id).catch(() => null);
-  if (!campaign) { res.status(404).json({ error: "Campaign not found" }); return; }
-  if (campaign.status !== "active") { res.status(400).json({ error: "Campaign is not accepting submissions" }); return; }
-
-  const { name, phone, consent } = req.body;
-  if (!name || typeof name !== "string" || name.trim().length === 0) {
-    res.status(400).json({ error: "name is required" }); return;
-  }
-  if (!phone || typeof phone !== "string" || phone.trim().length < 7) {
-    res.status(400).json({ error: "valid phone is required" }); return;
-  }
-  if (!consent) {
-    res.status(400).json({ error: "consent is required" }); return;
-  }
-
-  // Country code restriction check
-  if (campaign.allowedCountryCode) {
-    const parsed = parsePhoneNumberFromString(phone.trim());
-    if (!parsed || !parsed.isValid() || parsed.country !== campaign.allowedCountryCode) {
-      res.status(400).json({
-        error: `This campaign only accepts phone numbers from ${campaign.allowedCountryCode}. Please include your country dial code (e.g. +1 for US).`,
-        code: "COUNTRY_RESTRICTED",
-        allowedCountryCode: campaign.allowedCountryCode,
-      });
-      return;
-    }
-  }
-
-  const existing = await Contact.findOne({ campaignId: campaign._id }).where("phone").equals(phone.trim());
-  if (existing) {
-    res.status(409).json({ error: "This phone number has already been submitted" });
-    return;
-  }
-
-  const contact = await Contact.create({
-    campaignId: campaign._id,
-    name: name.trim(),
-    phone: phone.trim(),
+// POST /campaigns/:id/contacts — disabled; all submissions must go through OTP verification
+router.post("/campaigns/:id/contacts", (_req, res) => {
+  res.status(405).json({
+    error: "Direct contact submission is not allowed. Please use the verified submission flow (send-otp → verify-otp).",
   });
-
-  const count = await Contact.countDocuments({ campaignId: campaign._id });
-  if (count >= campaign.targetContacts) {
-    await Campaign.findByIdAndUpdate(campaign._id, { status: "completed" });
-  }
-
-  res.status(201).json(contact);
 });
 
 export default router;
