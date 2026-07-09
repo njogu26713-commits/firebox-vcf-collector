@@ -255,9 +255,15 @@ router.post("/campaigns/:id/contacts/send-otp", async (req, res) => {
   try {
     await sendOtpSms(normalizedPhone, code);
   } catch (err: any) {
-    // Remove the stored OTP so the user can retry
+    // Remove the stored OTP so the user can retry immediately
     await Otp.deleteOne({ phone: normalizedPhone, campaignId: campaign._id });
-    res.status(502).json({ error: "Failed to send SMS. Please check your phone number and try again." }); return;
+    // Log the real AT error so it appears in Railway/server logs
+    req.log.error({ err: err?.message ?? String(err), phone: normalizedPhone }, "SMS OTP send failed");
+    res.status(502).json({
+      error: "Failed to send SMS. Please check your phone number and try again.",
+      // Include AT detail in non-production so you can debug from the browser
+      ...(process.env.NODE_ENV !== "production" && { detail: err?.message }),
+    }); return;
   }
 
   res.json({ message: "Verification code sent. It expires in 5 minutes." });
