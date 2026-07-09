@@ -261,8 +261,8 @@ router.post("/campaigns/:id/contacts/send-otp", async (req, res) => {
     req.log.error({ err: err?.message ?? String(err), phone: normalizedPhone }, "SMS OTP send failed");
     res.status(502).json({
       error: "Failed to send SMS. Please check your phone number and try again.",
-      // Include AT detail in non-production so you can debug from the browser
-      ...(process.env.NODE_ENV !== "production" && { detail: err?.message }),
+      // Always include the raw provider error so it's visible without digging through server logs
+      detail: err?.message ?? String(err),
     }); return;
   }
 
