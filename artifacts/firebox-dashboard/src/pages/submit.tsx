@@ -29,7 +29,7 @@ async function sendOtp(campaignId: string, phone: string) {
     body: JSON.stringify({ phone }),
   });
   const json = await res.json();
-  if (!res.ok) throw new Error(json.detail ?? json.error ?? 'Failed to send verification code');
+  if (!res.ok) throw new Error(json.error ?? 'Failed to send verification code');
   return json;
 }
 
