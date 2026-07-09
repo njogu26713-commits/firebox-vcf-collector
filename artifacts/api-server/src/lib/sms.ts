@@ -69,7 +69,7 @@ export async function sendOtpSms(phone: string, code: string): Promise<void> {
     throw new Error(`AT returned no recipients. Full response: ${JSON.stringify(result)}`);
   }
 
-  const failed = recipients.filter((r) => r.statusCode !== 101);
+  const failed = recipients.filter((r) => r.statusCode !== 100);
   if (failed.length > 0) {
     const detail = failed.map((r) => `${r.number}: ${r.status} (code ${r.statusCode})`).join(", ");
     throw new Error(`AT delivery failed — ${detail}`);
