@@ -33,9 +33,16 @@ app.use(
 // Same-origin requests (no Origin header) are always permitted.
 // Set ALLOWED_ORIGINS as a comma-separated list of origins in the environment
 // (e.g. "https://myapp.up.railway.app") to enable cross-origin access.
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim()).filter(Boolean)
-  : [];
+const allowedOrigins = new Set<string>([
+  // Explicit list from env (comma-separated, e.g. production Railway domain)
+  ...(process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim()).filter(Boolean)
+    : []),
+  // Automatically allow the Replit dev domain in development
+  ...(process.env.REPLIT_DEV_DOMAIN
+    ? [`https://${process.env.REPLIT_DEV_DOMAIN}`]
+    : []),
+]);
 
 app.use(
   cors({
@@ -43,7 +50,7 @@ app.use(
     origin: (origin, callback) => {
       // Same-origin requests have no Origin header — always allow.
       if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) return callback(null, true);
+      if (allowedOrigins.has(origin)) return callback(null, true);
       callback(new Error(`CORS: origin '${origin}' is not allowed`));
     },
   }),
