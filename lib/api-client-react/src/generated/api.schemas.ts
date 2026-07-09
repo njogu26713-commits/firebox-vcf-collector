@@ -57,6 +57,11 @@ export interface Campaign {
   allowedCountryCode?: string | null;
   /** If true, submitters must confirm their number is active on WhatsApp. */
   requireWhatsapp?: boolean;
+  /**
+     * WhatsApp group invite link where the owner will drop the VCF.
+     * @nullable
+     */
+  groupLink?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -84,6 +89,11 @@ export interface CampaignInput {
   allowedCountryCode?: string | null;
   /** If true, submitters must confirm their number is active on WhatsApp. */
   requireWhatsapp?: boolean;
+  /**
+     * WhatsApp group invite link where the owner will drop the VCF.
+     * @nullable
+     */
+  groupLink?: string | null;
 }
 
 export type CampaignUpdateStatus = typeof CampaignUpdateStatus[keyof typeof CampaignUpdateStatus];
@@ -109,6 +119,11 @@ export interface CampaignUpdate {
   allowedCountryCode?: string | null;
   /** If true, submitters must confirm their number is active on WhatsApp. */
   requireWhatsapp?: boolean;
+  /**
+     * WhatsApp group invite link where the owner will drop the VCF.
+     * @nullable
+     */
+  groupLink?: string | null;
 }
 
 export interface Contact {

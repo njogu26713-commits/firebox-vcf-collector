@@ -85,6 +85,7 @@ export const ListCampaignsResponseItem = zod.object({
   "vcfDownloaded": zod.boolean().optional(),
   "allowedCountryCode": zod.string().nullish().describe('ISO 3166-1 alpha-2 country code. Null means all countries are allowed.'),
   "requireWhatsapp": zod.boolean().optional().describe('If true, submitters must confirm their number is active on WhatsApp.'),
+  "groupLink": zod.string().nullish().describe('WhatsApp group invite link where the owner will drop the VCF.'),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
@@ -104,7 +105,8 @@ export const CreateCampaignBody = zod.object({
   "targetContacts": zod.number().min(1),
   "status": zod.enum(['draft', 'active', 'completed']).optional(),
   "allowedCountryCode": zod.string().nullish().describe('ISO 3166-1 alpha-2 country code. Null means all countries are allowed.'),
-  "requireWhatsapp": zod.boolean().optional().describe('If true, submitters must confirm their number is active on WhatsApp.')
+  "requireWhatsapp": zod.boolean().optional().describe('If true, submitters must confirm their number is active on WhatsApp.'),
+  "groupLink": zod.string().nullish().describe('WhatsApp group invite link where the owner will drop the VCF.')
 })
 
 export const CreateCampaignResponse = zod.object({
@@ -121,6 +123,7 @@ export const CreateCampaignResponse = zod.object({
   "vcfDownloaded": zod.boolean().optional(),
   "allowedCountryCode": zod.string().nullish().describe('ISO 3166-1 alpha-2 country code. Null means all countries are allowed.'),
   "requireWhatsapp": zod.boolean().optional().describe('If true, submitters must confirm their number is active on WhatsApp.'),
+  "groupLink": zod.string().nullish().describe('WhatsApp group invite link where the owner will drop the VCF.'),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
@@ -147,6 +150,7 @@ export const GetCampaignResponse = zod.object({
   "vcfDownloaded": zod.boolean().optional(),
   "allowedCountryCode": zod.string().nullish().describe('ISO 3166-1 alpha-2 country code. Null means all countries are allowed.'),
   "requireWhatsapp": zod.boolean().optional().describe('If true, submitters must confirm their number is active on WhatsApp.'),
+  "groupLink": zod.string().nullish().describe('WhatsApp group invite link where the owner will drop the VCF.'),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })
@@ -169,7 +173,8 @@ export const UpdateCampaignBody = zod.object({
   "targetContacts": zod.number().min(1).optional(),
   "status": zod.enum(['draft', 'active', 'completed']).optional(),
   "allowedCountryCode": zod.string().nullish().describe('ISO 3166-1 alpha-2 country code. Null means all countries are allowed.'),
-  "requireWhatsapp": zod.boolean().optional().describe('If true, submitters must confirm their number is active on WhatsApp.')
+  "requireWhatsapp": zod.boolean().optional().describe('If true, submitters must confirm their number is active on WhatsApp.'),
+  "groupLink": zod.string().nullish().describe('WhatsApp group invite link where the owner will drop the VCF.')
 })
 
 export const UpdateCampaignResponse = zod.object({
@@ -186,6 +191,7 @@ export const UpdateCampaignResponse = zod.object({
   "vcfDownloaded": zod.boolean().optional(),
   "allowedCountryCode": zod.string().nullish().describe('ISO 3166-1 alpha-2 country code. Null means all countries are allowed.'),
   "requireWhatsapp": zod.boolean().optional().describe('If true, submitters must confirm their number is active on WhatsApp.'),
+  "groupLink": zod.string().nullish().describe('WhatsApp group invite link where the owner will drop the VCF.'),
   "createdAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date()
 })

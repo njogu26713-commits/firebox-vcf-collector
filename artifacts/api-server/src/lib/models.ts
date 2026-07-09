@@ -31,6 +31,7 @@ const campaignSchema = new Schema(
     vcfDownloaded: { type: Boolean, default: false },
     allowedCountryCode: { type: String, default: null },
     requireWhatsapp: { type: Boolean, default: false },
+    groupLink: { type: String, default: null },
   },
   { timestamps: true }
 );

@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Flame, ArrowLeft, Loader2, Globe, Search, MessageCircle } from 'lucide-react';
+import { Flame, ArrowLeft, Loader2, Globe, Search, MessageCircle, Link as LinkIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { COUNTRIES, getCountryByCode } from '@/lib/countries';
 
@@ -22,6 +22,7 @@ const formSchema = z.object({
   status: z.enum(['draft', 'active', 'completed']).default('draft'),
   allowedCountryCode: z.string().nullable().default(null),
   requireWhatsapp: z.boolean().default(false),
+  groupLink: z.string().url('Must be a valid URL').or(z.literal('')).nullable().default(null),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -50,6 +51,7 @@ export default function CreateCampaign() {
       status: 'draft',
       allowedCountryCode: null,
       requireWhatsapp: false,
+      groupLink: null,
     },
   });
 
@@ -69,13 +71,19 @@ export default function CreateCampaign() {
         status: existing.status as any,
         allowedCountryCode: (existing as any).allowedCountryCode ?? null,
         requireWhatsapp: (existing as any).requireWhatsapp ?? false,
+        groupLink: (existing as any).groupLink ?? null,
       });
     }
   }, [existing, form, isEdit]);
 
   const onSubmit = (values: FormValues) => {
+    // Normalise groupLink — empty string → null
+    const payload = {
+      ...values,
+      groupLink: values.groupLink && values.groupLink.trim() ? values.groupLink.trim() : null,
+    };
     if (isEdit && campaignId) {
-      updateMutation.mutate({ id: campaignId, data: values }, {
+      updateMutation.mutate({ id: campaignId, data: payload }, {
         onSuccess: () => {
           toast({ title: 'Campaign updated successfully!' });
           queryClient.invalidateQueries({ queryKey: getListCampaignsQueryKey() });
@@ -87,7 +95,7 @@ export default function CreateCampaign() {
         }
       });
     } else {
-      createMutation.mutate({ data: values }, {
+      createMutation.mutate({ data: payload }, {
         onSuccess: () => {
           toast({ title: 'Campaign created successfully!' });
           queryClient.invalidateQueries({ queryKey: getListCampaignsQueryKey() });
@@ -346,6 +354,41 @@ export default function CreateCampaign() {
                       </div>
                     </div>
                     <FormMessage className="text-destructive" />
+                  </FormItem>
+                )}
+              />
+              {/* WhatsApp group link */}
+              <FormField
+                control={form.control}
+                name="groupLink"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className={`rounded-xl border transition-all overflow-hidden ${
+                      field.value ? 'border-green-500/40 bg-green-500/5' : 'border-border bg-background'
+                    }`}>
+                      <div className="flex items-center gap-3 px-4 pt-4 pb-3">
+                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                          field.value ? 'bg-green-500/15' : 'bg-secondary'
+                        }`}>
+                          <LinkIcon className={`w-5 h-5 ${field.value ? 'text-green-500' : 'text-muted-foreground'}`} />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">WhatsApp Group Link</p>
+                          <p className="text-xs text-muted-foreground">The group where you'll drop the VCF once the target is reached</p>
+                        </div>
+                      </div>
+                      <div className="px-4 pb-4">
+                        <FormControl>
+                          <Input
+                            placeholder="https://chat.whatsapp.com/..."
+                            className="bg-background border-border text-foreground h-11 px-4 focus-visible:ring-primary/50"
+                            value={field.value ?? ''}
+                            onChange={e => field.onChange(e.target.value || null)}
+                          />
+                        </FormControl>
+                        <FormMessage className="text-destructive mt-2" />
+                      </div>
+                    </div>
                   </FormItem>
                 )}
               />

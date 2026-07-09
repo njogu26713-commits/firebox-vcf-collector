@@ -28,6 +28,7 @@ function formatCampaign(campaign: any, contactsCollected: number) {
     vcfDownloaded: campaign.vcfDownloaded,
     allowedCountryCode: campaign.allowedCountryCode ?? null,
     requireWhatsapp: campaign.requireWhatsapp ?? false,
+    groupLink: campaign.groupLink ?? null,
     createdAt: campaign.createdAt,
     updatedAt: campaign.updatedAt,
     contactsCollected,
@@ -60,7 +61,7 @@ router.post("/campaigns", requireAuth, async (req, res) => {
     return;
   }
 
-  const { title, description, targetContacts, status, allowedCountryCode, requireWhatsapp } = req.body;
+  const { title, description, targetContacts, status, allowedCountryCode, requireWhatsapp, groupLink } = req.body;
   if (!title || typeof title !== "string" || title.trim().length === 0) {
     res.status(400).json({ error: "title is required" });
     return;
@@ -85,6 +86,7 @@ router.post("/campaigns", requireAuth, async (req, res) => {
     shareToken: makeShareToken(),
     allowedCountryCode: resolvedCountryCode,
     requireWhatsapp: requireWhatsapp === true,
+    groupLink: typeof groupLink === "string" && groupLink.trim() ? groupLink.trim() : null,
   });
   res.status(201).json(formatCampaign(campaign, 0));
 });
@@ -115,7 +117,7 @@ router.get("/campaigns/:id", requireAuth, async (req, res) => {
 // PATCH /campaigns/:id — only owner can update
 router.patch("/campaigns/:id", requireAuth, async (req, res) => {
   const userId = (req as any).userId;
-  const { title, description, targetContacts, status, allowedCountryCode, requireWhatsapp } = req.body;
+  const { title, description, targetContacts, status, allowedCountryCode, requireWhatsapp, groupLink } = req.body;
   const updates: Record<string, any> = {};
   if (title !== undefined) {
     if (typeof title !== "string" || title.trim().length === 0) {
@@ -142,6 +144,9 @@ router.patch("/campaigns/:id", requireAuth, async (req, res) => {
   }
   if (requireWhatsapp !== undefined) {
     updates.requireWhatsapp = requireWhatsapp === true;
+  }
+  if (groupLink !== undefined) {
+    updates.groupLink = typeof groupLink === "string" && groupLink.trim() ? groupLink.trim() : null;
   }
   const campaign = await Campaign.findOneAndUpdate({ _id: req.params.id, userId }, updates, { new: true }).catch(() => null);
   if (!campaign) { res.status(404).json({ error: "Not found" }); return; }

@@ -21,4 +21,9 @@ export interface CampaignUpdate {
   allowedCountryCode?: string | null;
   /** If true, submitters must confirm their number is active on WhatsApp. */
   requireWhatsapp?: boolean;
+  /**
+     * WhatsApp group invite link where the owner will drop the VCF.
+     * @nullable
+     */
+  groupLink?: string | null;
 }
