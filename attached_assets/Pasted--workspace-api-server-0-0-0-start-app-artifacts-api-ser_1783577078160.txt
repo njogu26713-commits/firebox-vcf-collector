@@ -1,0 +1,91 @@
+> @workspace/api-server@0.0.0 start /app/artifacts/api-server
+> node --enable-source-maps ./dist/index.mjs
+Connected to MongoDB
+Server listening
+Starting Container
+request completed
+request errored
+Error: CORS: origin 'https://vcf.firebox.live' is not allowed
+    at origin (/app/artifacts/api-server/src/app.ts:54:16)
+    at <anonymous> (/app/node_modules/.pnpm/cors@2.8.6/node_modules/cors/lib/index.js:219:13)
+    at optionsCallback (/app/node_modules/.pnpm/cors@2.8.6/node_modules/cors/lib/index.js:199:9)
+    at corsMiddleware (/app/node_modules/.pnpm/cors@2.8.6/node_modules/cors/lib/index.js:204:7)
+    at Layer.handleRequest (/app/node_modules/.pnpm/router@2.2.0/node_modules/router/lib/layer.js:152:17)
+    at trimPrefix (/app/node_modules/.pnpm/router@2.2.0/node_modules/router/index.js:342:13)
+    at <anonymous> (/app/node_modules/.pnpm/router@2.2.0/node_modules/router/index.js:297:9)
+    at processParams (/app/node_modules/.pnpm/router@2.2.0/node_modules/router/index.js:582:12)
+    at next (/app/node_modules/.pnpm/router@2.2.0/node_modules/router/index.js:291:5)
+    at loggingMiddleware (/app/node_modules/.pnpm/pino-http@10.5.0/node_modules/pino-http/logger.js:206:7)
+request errored
+Error: CORS: origin 'https://vcf.firebox.live' is not allowed
+    at origin (/app/artifacts/api-server/src/app.ts:54:16)
+    at <anonymous> (/app/node_modules/.pnpm/cors@2.8.6/node_modules/cors/lib/index.js:219:13)
+    at optionsCallback (/app/node_modules/.pnpm/cors@2.8.6/node_modules/cors/lib/index.js:199:9)
+    at corsMiddleware (/app/node_modules/.pnpm/cors@2.8.6/node_modules/cors/lib/index.js:204:7)
+    at Layer.handleRequest (/app/node_modules/.pnpm/router@2.2.0/node_modules/router/lib/layer.js:152:17)
+    at trimPrefix (/app/node_modules/.pnpm/router@2.2.0/node_modules/router/index.js:342:13)
+    at <anonymous> (/app/node_modules/.pnpm/router@2.2.0/node_modules/router/index.js:297:9)
+    at processParams (/app/node_modules/.pnpm/router@2.2.0/node_modules/router/index.js:582:12)
+    at next (/app/node_modules/.pnpm/router@2.2.0/node_modules/router/index.js:291:5)
+    at loggingMiddleware (/app/node_modules/.pnpm/pino-http@10.5.0/node_modules/pino-http/logger.js:206:7)
+request completed
+request errored
+Error: CORS: origin 'https://vcf.firebox.live' is not allowed
+    at origin (/app/artifacts/api-server/src/app.ts:54:16)
+    at <anonymous> (/app/node_modules/.pnpm/cors@2.8.6/node_modules/cors/lib/index.js:219:13)
+    at optionsCallback (/app/node_modules/.pnpm/cors@2.8.6/node_modules/cors/lib/index.js:199:9)
+    at corsMiddleware (/app/node_modules/.pnpm/cors@2.8.6/node_modules/cors/lib/index.js:204:7)
+    at Layer.handleRequest (/app/node_modules/.pnpm/router@2.2.0/node_modules/router/lib/layer.js:152:17)
+    at trimPrefix (/app/node_modules/.pnpm/router@2.2.0/node_modules/router/index.js:342:13)
+    at <anonymous> (/app/node_modules/.pnpm/router@2.2.0/node_modules/router/index.js:297:9)
+    at processParams (/app/node_modules/.pnpm/router@2.2.0/node_modules/router/index.js:582:12)
+    at next (/app/node_modules/.pnpm/router@2.2.0/node_modules/router/index.js:291:5)
+    at loggingMiddleware (/app/node_modules/.pnpm/pino-http@10.5.0/node_modules/pino-http/logger.js:206:7)
+request errored
+Error: CORS: origin 'https://vcf.firebox.live' is not allowed
+    at origin (/app/artifacts/api-server/src/app.ts:54:16)
+    at <anonymous> (/app/node_modules/.pnpm/cors@2.8.6/node_modules/cors/lib/index.js:219:13)
+    at optionsCallback (/app/node_modules/.pnpm/cors@2.8.6/node_modules/cors/lib/index.js:199:9)
+    at corsMiddleware (/app/node_modules/.pnpm/cors@2.8.6/node_modules/cors/lib/index.js:204:7)
+    at Layer.handleRequest (/app/node_modules/.pnpm/router@2.2.0/node_modules/router/lib/layer.js:152:17)
+    at trimPrefix (/app/node_modules/.pnpm/router@2.2.0/node_modules/router/index.js:342:13)
+    at <anonymous> (/app/node_modules/.pnpm/router@2.2.0/node_modules/router/index.js:297:9)
+    at processParams (/app/node_modules/.pnpm/router@2.2.0/node_modules/router/index.js:582:12)
+    at next (/app/node_modules/.pnpm/router@2.2.0/node_modules/router/index.js:291:5)
+    at loggingMiddleware (/app/node_modules/.pnpm/pino-http@10.5.0/node_modules/pino-http/logger.js:206:7)
+request completed
+request completed
+request completed
+request completed
+request completed
+request completed
+request completed
+request completed
+request completed
+request completed
+request completed
+    at optionsCallback (/app/node_modules/.pnpm/cors@2.8.6/node_modules/cors/lib/index.js:199:9)
+    at corsMiddleware (/app/node_modules/.pnpm/cors@2.8.6/node_modules/cors/lib/index.js:204:7)
+    at Layer.handleRequest (/app/node_modules/.pnpm/router@2.2.0/node_modules/router/lib/layer.js:152:17)
+request completed
+request errored
+Error: CORS: origin 'https://vcf.firebox.live' is not allowed
+    at origin (/app/artifacts/api-server/src/app.ts:54:16)
+    at <anonymous> (/app/node_modules/.pnpm/cors@2.8.6/node_modules/cors/lib/index.js:219:13)
+    at trimPrefix (/app/node_modules/.pnpm/router@2.2.0/node_modules/router/index.js:342:13)
+    at <anonymous> (/app/node_modules/.pnpm/router@2.2.0/node_modules/router/index.js:297:9)
+    at processParams (/app/node_modules/.pnpm/router@2.2.0/node_modules/router/index.js:582:12)
+    at next (/app/node_modules/.pnpm/router@2.2.0/node_modules/router/index.js:291:5)
+    at loggingMiddleware (/app/node_modules/.pnpm/pino-http@10.5.0/node_modules/pino-http/logger.js:206:7)
+request errored
+Error: CORS: origin 'https://vcf.firebox.live' is not allowed
+    at origin (/app/artifacts/api-server/src/app.ts:54:16)
+    at <anonymous> (/app/node_modules/.pnpm/cors@2.8.6/node_modules/cors/lib/index.js:219:13)
+    at optionsCallback (/app/node_modules/.pnpm/cors@2.8.6/node_modules/cors/lib/index.js:199:9)
+    at corsMiddleware (/app/node_modules/.pnpm/cors@2.8.6/node_modules/cors/lib/index.js:204:7)
+    at Layer.handleRequest (/app/node_modules/.pnpm/router@2.2.0/node_modules/router/lib/layer.js:152:17)
+    at trimPrefix (/app/node_modules/.pnpm/router@2.2.0/node_modules/router/index.js:342:13)
+    at <anonymous> (/app/node_modules/.pnpm/router@2.2.0/node_modules/router/index.js:297:9)
+    at processParams (/app/node_modules/.pnpm/router@2.2.0/node_modules/router/index.js:582:12)
+    at next (/app/node_modules/.pnpm/router@2.2.0/node_modules/router/index.js:291:5)
+    at loggingMiddleware (/app/node_modules/.pnpm/pino-http@10.5.0/node_modules/pino-http/logger.js:206:7)

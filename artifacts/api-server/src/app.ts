@@ -42,6 +42,10 @@ const allowedOrigins = new Set<string>([
   ...(process.env.REPLIT_DEV_DOMAIN
     ? [`https://${process.env.REPLIT_DEV_DOMAIN}`]
     : []),
+  // Automatically allow the Railway public domain (set by Railway for all deployments)
+  ...(process.env.RAILWAY_PUBLIC_DOMAIN
+    ? [`https://${process.env.RAILWAY_PUBLIC_DOMAIN}`]
+    : []),
 ]);
 
 app.use(
