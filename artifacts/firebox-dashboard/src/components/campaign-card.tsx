@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Copy, Download, Edit2, Link as LinkIcon, Lock, Trash2 } from 'lucide-react';
+import { Copy, Download, Edit2, Link as LinkIcon, Lock, Trash2, Users } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { useDeleteCampaign, getListCampaignsQueryKey, getGetDashboardStatsQueryKey } from '@workspace/api-client-react';
@@ -155,6 +155,14 @@ export function CampaignCard({ campaign, index = 0 }: { campaign: Campaign; inde
         </div>
 
         <div className="flex items-center gap-1.5">
+          <Link
+            href={`/campaigns/${campaign.id}/contacts`}
+            className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors outline-none"
+            title="View Registered Contacts"
+            data-testid={`link-contacts-${campaign.id}`}
+          >
+            <Users className="w-4 h-4" />
+          </Link>
           <Link 
             href={`/edit/${campaign.id}`}
             className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors outline-none"

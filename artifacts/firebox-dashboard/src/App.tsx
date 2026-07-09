@@ -11,6 +11,7 @@ import Campaigns from '@/pages/campaigns';
 import CreateCampaign from '@/pages/create-campaign';
 import Analytics from '@/pages/analytics';
 import Settings from '@/pages/settings';
+import CampaignContacts from '@/pages/campaign-contacts';
 import SubmitPage from '@/pages/submit';
 import SignInPage from '@/pages/sign-in';
 import SignUpPage from '@/pages/sign-up';
@@ -45,6 +46,7 @@ function ProtectedDashboard() {
         <Route path="/campaigns" component={Campaigns} />
         <Route path="/create" component={CreateCampaign} />
         <Route path="/edit/:id" component={CreateCampaign} />
+        <Route path="/campaigns/:id/contacts" component={CampaignContacts} />
         <Route path="/analytics" component={Analytics} />
         <Route path="/settings" component={Settings} />
         <Route component={NotFound} />
