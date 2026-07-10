@@ -20,6 +20,9 @@ const contactSchema = new Schema(
   { timestamps: true }
 );
 
+// Prevent duplicate phone submissions per campaign at the DB level (race-safe)
+contactSchema.index({ campaignId: 1, phone: 1 }, { unique: true });
+
 const campaignSchema = new Schema(
   {
     userId: { type: String, required: false, index: true },

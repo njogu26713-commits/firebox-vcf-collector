@@ -234,11 +234,20 @@ router.post("/campaigns/:id/contacts", async (req, res) => {
     res.status(409).json({ error: "This phone number has already been submitted to this campaign" }); return;
   }
 
-  const contact = await Contact.create({
-    campaignId: campaign._id,
-    name: name.trim(),
-    phone: normalizedPhone,
-  });
+  let contact;
+  try {
+    contact = await Contact.create({
+      campaignId: campaign._id,
+      name: name.trim(),
+      phone: normalizedPhone,
+    });
+  } catch (err: any) {
+    if (err.code === 11000) {
+      // Race with a concurrent submission for the same phone — unique index caught it
+      res.status(409).json({ error: "This phone number has already been submitted to this campaign" }); return;
+    }
+    throw err;
+  }
 
   const count = await Contact.countDocuments({ campaignId: campaign._id });
   if (count >= campaign.targetContacts) {
