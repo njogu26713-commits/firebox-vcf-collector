@@ -1,8 +1,8 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useParams } from 'wouter';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Flame, CheckCircle2, AlertCircle, Loader2, Users, Target, Globe, MessageCircle, ExternalLink, ShieldCheck, RotateCcw } from 'lucide-react';
+import { Flame, CheckCircle2, AlertCircle, Loader2, Users, Target, Globe, MessageCircle, ExternalLink, ShieldCheck } from 'lucide-react';
 import { getCountryByCode } from '@/lib/countries';
 
 const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, '');
@@ -22,32 +22,21 @@ async function fetchCampaignByToken(token: string) {
   return res.json();
 }
 
-async function sendOtp(campaignId: string, phone: string) {
-  const res = await fetch(`${API_BASE}/api/campaigns/${campaignId}/contacts/send-otp`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ phone }),
-  });
-  const json = await res.json();
-  if (!res.ok) throw new Error(json.error ?? 'Failed to send verification code');
-  return json;
-}
-
-async function verifyOtpAndSubmit(
+async function submitContact(
   campaignId: string,
-  data: { name: string; phone: string; otp: string; consent: boolean },
+  data: { name: string; phone: string; consent: boolean },
 ) {
-  const res = await fetch(`${API_BASE}/api/campaigns/${campaignId}/contacts/verify-otp`, {
+  const res = await fetch(`${API_BASE}/api/campaigns/${campaignId}/contacts`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
   const json = await res.json();
-  if (!res.ok) throw new Error(json.error ?? 'Verification failed');
+  if (!res.ok) throw new Error(json.error ?? 'Submission failed');
   return json;
 }
 
-type Step = 'form' | 'otp' | 'success';
+type Step = 'form' | 'success';
 
 export default function SubmitPage() {
   const { token } = useParams<{ token: string }>();
@@ -55,12 +44,8 @@ export default function SubmitPage() {
   const [phone, setPhone] = useState('');
   const [consent, setConsent] = useState(false);
   const [whatsappConsent, setWhatsappConsent] = useState(false);
-  const [otp, setOtp] = useState('');
   const [step, setStep] = useState<Step>('form');
   const [groupLink, setGroupLink] = useState<string | null>(null);
-
-  // Keep a ref to the phone that the OTP was sent to (so it doesn't change mid-flow)
-  const sentToPhone = useRef('');
 
   const { data: campaign, isLoading, isError, error } = useQuery({
     queryKey: ['campaign-by-token', token],
@@ -69,44 +54,23 @@ export default function SubmitPage() {
     retry: false,
   });
 
-  const sendMutation = useMutation({
-    mutationFn: () => sendOtp(campaign.id, phone.trim()),
-    onSuccess: () => {
-      sentToPhone.current = phone.trim();
-      setStep('otp');
-    },
-  });
-
-  const verifyMutation = useMutation({
+  const submitMutation = useMutation({
     mutationFn: () =>
-      verifyOtpAndSubmit(campaign.id, {
+      submitContact(campaign.id, {
         name: name.trim(),
-        phone: sentToPhone.current,
-        otp: otp.trim(),
+        phone: phone.trim(),
         consent,
       }),
-    onSuccess: (data) => {
+    onSuccess: () => {
       setGroupLink(campaign.groupLink ?? null);
       setStep('success');
     },
   });
 
-  const handleSendOtp = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (campaign.requireWhatsapp && !whatsappConsent) return;
-    sendMutation.mutate();
-  };
-
-  const handleVerify = (e: React.FormEvent) => {
-    e.preventDefault();
-    verifyMutation.mutate();
-  };
-
-  const handleResend = () => {
-    setOtp('');
-    sendMutation.reset();
-    verifyMutation.reset();
-    sendMutation.mutate();
+    submitMutation.mutate();
   };
 
   // Loading state
@@ -208,113 +172,6 @@ export default function SubmitPage() {
           </motion.div>
         )}
 
-        {/* ── OTP STEP ── */}
-        {step === 'otp' && (
-          <motion.div
-            key="otp"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -16 }}
-            transition={{ duration: 0.3 }}
-            className="max-w-md w-full"
-          >
-            {/* Header */}
-            <div className="text-center mb-8">
-              <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 text-primary px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider mb-4">
-                <ShieldCheck className="w-3.5 h-3.5" />
-                Verify Your Number
-              </div>
-              <h1 className="text-2xl font-extrabold text-foreground mb-2">Check your messages</h1>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                We sent a 6-digit code to{' '}
-                <span className="font-semibold text-foreground">{sentToPhone.current}</span>.
-                Enter it below to complete your submission.
-              </p>
-            </div>
-
-            <form onSubmit={handleVerify} className="bg-card border border-border rounded-2xl p-6 space-y-5">
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium text-foreground" htmlFor="otp">
-                  Verification code
-                </label>
-                <input
-                  id="otp"
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  maxLength={6}
-                  required
-                  autoFocus
-                  autoComplete="one-time-code"
-                  placeholder="123456"
-                  value={otp}
-                  onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground text-lg text-center tracking-[0.3em] font-mono focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition"
-                />
-              </div>
-
-              {verifyMutation.isError && (
-                <div className="flex items-center gap-2 text-destructive text-sm bg-destructive/10 border border-destructive/20 rounded-xl px-4 py-3">
-                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                  {verifyMutation.error?.message ?? 'Something went wrong. Please try again.'}
-                </div>
-              )}
-
-              {sendMutation.isError && (
-                <div className="flex items-center gap-2 text-destructive text-sm bg-destructive/10 border border-destructive/20 rounded-xl px-4 py-3">
-                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                  {sendMutation.error?.message ?? 'Failed to resend code.'}
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={verifyMutation.isPending || otp.length < 6}
-                className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground font-semibold py-3 rounded-xl transition flex items-center justify-center gap-2 text-sm"
-              >
-                {verifyMutation.isPending ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Verifying…
-                  </>
-                ) : (
-                  <>
-                    <ShieldCheck className="w-4 h-4" />
-                    Verify &amp; Join
-                  </>
-                )}
-              </button>
-
-              <div className="text-center">
-                <button
-                  type="button"
-                  onClick={handleResend}
-                  disabled={sendMutation.isPending}
-                  className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition disabled:opacity-50"
-                >
-                  {sendMutation.isPending ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  ) : (
-                    <RotateCcw className="w-3.5 h-3.5" />
-                  )}
-                  Didn't receive it? Resend code
-                </button>
-              </div>
-            </form>
-
-            <p className="text-center text-xs text-muted-foreground mt-4">
-              Wrong number?{' '}
-              <button
-                type="button"
-                onClick={() => { setStep('form'); sendMutation.reset(); verifyMutation.reset(); }}
-                className="underline underline-offset-2 hover:text-foreground transition"
-              >
-                Go back
-              </button>
-            </p>
-          </motion.div>
-        )}
-
         {/* ── FORM STEP ── */}
         {step === 'form' && (
           <motion.div
@@ -361,7 +218,7 @@ export default function SubmitPage() {
             </div>
 
             {/* Form */}
-            <form onSubmit={handleSendOtp} className="bg-card border border-border rounded-2xl p-6 space-y-5">
+            <form onSubmit={handleSubmit} className="bg-card border border-border rounded-2xl p-6 space-y-5">
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-foreground" htmlFor="name">
                   Full name
@@ -442,33 +299,27 @@ export default function SubmitPage() {
                 </>
               )}
 
-              {sendMutation.isError && (
+              {submitMutation.isError && (
                 <div className="flex items-center gap-2 text-destructive text-sm bg-destructive/10 border border-destructive/20 rounded-xl px-4 py-3">
                   <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                  {sendMutation.error?.message ?? 'Something went wrong. Please try again.'}
+                  {submitMutation.error?.message ?? 'Something went wrong. Please try again.'}
                 </div>
               )}
 
-              {/* SMS verification notice */}
-              <div className="flex items-center gap-2 text-xs text-muted-foreground bg-secondary border border-border rounded-xl px-4 py-3">
-                <ShieldCheck className="w-3.5 h-3.5 text-primary flex-shrink-0" />
-                We'll send a verification code to your phone via SMS.
-              </div>
-
               <button
                 type="submit"
-                disabled={sendMutation.isPending || !consent || (campaign.requireWhatsapp && !whatsappConsent)}
+                disabled={submitMutation.isPending || !consent || (campaign.requireWhatsapp && !whatsappConsent)}
                 className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground font-semibold py-3 rounded-xl transition flex items-center justify-center gap-2 text-sm"
               >
-                {sendMutation.isPending ? (
+                {submitMutation.isPending ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Sending code…
+                    Submitting…
                   </>
                 ) : (
                   <>
                     <ShieldCheck className="w-4 h-4" />
-                    Send verification code
+                    Join campaign
                   </>
                 )}
               </button>
