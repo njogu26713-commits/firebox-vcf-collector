@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "pnpm --filter @workspace/firebox-dashboard run build",
-  "outputDirectory": "artifacts/firebox-dashboard/dist/public",
+  "outputDirectory": "public",
   "rewrites": [
     {
       "source": "/api/:path*",
