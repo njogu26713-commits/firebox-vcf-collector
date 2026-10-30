@@ -92,10 +92,9 @@ app.use("/api", router);
 
 // In production, serve the built Vite frontend as static files.
 if (process.env.NODE_ENV === "production") {
-  const frontendDist = path.resolve(
-    process.cwd(),
-    "../firebox-dashboard/dist/public",
-  );
+  const frontendDist = process.env.VERCEL
+    ? path.resolve(process.cwd(), "artifacts/firebox-dashboard/dist/public")
+    : path.resolve(process.cwd(), "../firebox-dashboard/dist/public");
   app.use(express.static(frontendDist));
   app.use((_req, res) => {
     res.sendFile(path.join(frontendDist, "index.html"));
