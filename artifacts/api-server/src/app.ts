@@ -46,6 +46,10 @@ const allowedOrigins = new Set<string>([
   ...(process.env.RAILWAY_PUBLIC_DOMAIN
     ? [`https://${process.env.RAILWAY_PUBLIC_DOMAIN}`]
     : []),
+  // Allow same-origin requests when hosted on Azure App Service.
+  ...(process.env.WEBSITE_HOSTNAME
+    ? [`https://${process.env.WEBSITE_HOSTNAME}`]
+    : []),
 ]);
 
 app.use(
