@@ -37,11 +37,29 @@ jobs:
           PORT=5000 BASE_PATH=/__mockup pnpm --filter @workspace/mockup-sandbox run build
           pnpm -r --if-present run test
 
-      - name: Upload artifact for deployment job
+      - name: Prepare Azure deployment package
+        run: |
+          rm -rf deploy
+          mkdir -p deploy/artifacts/api-server
+          mkdir -p deploy/artifacts/firebox-dashboard/dist
+
+          cp package.json deploy/package.json
+
+          pnpm --filter @workspace/api-server deploy --legacy \
+            --prod deploy/artifacts/api-server
+
+          cp -R artifacts/api-server/dist \
+            deploy/artifacts/api-server/
+
+          cp -R artifacts/firebox-dashboard/dist/public \
+            deploy/artifacts/firebox-dashboard/dist/
+
+      - name: Upload deployment package
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: .
+          path: deploy
+          include-hidden-files: false
 
   deploy:
     runs-on: ubuntu-latest
