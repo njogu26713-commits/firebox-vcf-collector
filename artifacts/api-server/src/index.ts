@@ -16,8 +16,6 @@ if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
 
-await connectMongoDB();
-
 app.listen(port, (err) => {
   if (err) {
     logger.error({ err }, "Error listening on port");
@@ -25,4 +23,8 @@ app.listen(port, (err) => {
   }
 
   logger.info({ port }, "Server listening");
+});
+
+connectMongoDB().catch((err) => {
+  logger.error({ err }, "MongoDB connection is unavailable; API data operations may fail until it reconnects");
 });
