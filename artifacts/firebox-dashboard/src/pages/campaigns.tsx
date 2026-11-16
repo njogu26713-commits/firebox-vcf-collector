@@ -1,14 +1,18 @@
 import { useState } from 'react';
-import { useListCampaigns } from '@workspace/api-client-react';
+import { getListCampaignsQueryKey, useListCampaigns } from '@workspace/api-client-react';
 import { CampaignCard } from '@/components/campaign-card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'wouter';
 import { PlusCircle, SearchX } from 'lucide-react';
+import { useAuth } from '@/contexts/auth';
 
 export default function Campaigns() {
   const [filter, setFilter] = useState<'all' | 'draft' | 'active' | 'completed'>('all');
-  const { data: campaigns, isLoading } = useListCampaigns();
+  const { user } = useAuth();
+  const { data: campaigns, isLoading } = useListCampaigns({
+    query: { queryKey: [...getListCampaignsQueryKey(), user?.id ?? 'signed-out'] },
+  });
 
   const filtered = campaigns?.filter(c => filter === 'all' || c.status === filter) || [];
 
@@ -20,7 +24,7 @@ export default function Campaigns() {
   ] as const;
 
   return (
-    <div className="space-y-8 pb-10">
+    <div className="space-y-4 pb-10">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight text-foreground mb-2">My VCF Campaigns</h1>
@@ -59,9 +63,9 @@ export default function Campaigns() {
       </div>
 
       {/* Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-1">
         {isLoading ? (
-          Array(6).fill(0).map((_, i) => <Skeleton key={i} className="h-[280px] rounded-[18px] bg-card border-border" />)
+          Array(6).fill(0).map((_, i) => <Skeleton key={i} className="h-[280px] rounded-[5px] bg-card border-border" />)
         ) : (
           <AnimatePresence mode="popLayout">
             {filtered.length > 0 ? (
@@ -72,7 +76,7 @@ export default function Campaigns() {
               <motion.div 
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="col-span-full py-20 flex flex-col items-center justify-center bg-card rounded-[20px] border border-border text-center"
+                className="col-span-full py-20 flex flex-col items-center justify-center bg-card rounded-[5px] border border-border text-center"
               >
                 <div className="w-20 h-20 rounded-full bg-secondary flex items-center justify-center mb-6">
                   <SearchX className="w-10 h-10 text-muted-foreground" />

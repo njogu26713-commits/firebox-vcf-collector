@@ -34,6 +34,8 @@ app.use(
 // Set ALLOWED_ORIGINS as a comma-separated list of origins in the environment
 // (e.g. "https://myapp.up.railway.app") to enable cross-origin access.
 const allowedOrigins = new Set<string>([
+  // Production dashboard origin.
+  "https://vcf.firebox.live",
   // Explicit list from env (comma-separated, e.g. production Railway domain)
   ...(process.env.ALLOWED_ORIGINS
     ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim()).filter(Boolean)

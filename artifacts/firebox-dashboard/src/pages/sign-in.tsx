@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link } from 'wouter';
 import { Flame } from 'lucide-react';
-import { useAuth } from '@/contexts/auth';
+import { getFriendlyAuthError, useAuth } from '@/contexts/auth';
 
 export default function SignInPage() {
   const { signIn } = useAuth();
@@ -17,7 +17,7 @@ export default function SignInPage() {
     try {
       await signIn(email, password);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unable to sign in');
+      setError(getFriendlyAuthError(err, 'We could not sign you in. Please try again.'));
     } finally {
       setIsSubmitting(false);
     }
@@ -25,7 +25,7 @@ export default function SignInPage() {
 
   return (
     <div className="flex min-h-[100dvh] items-center justify-center bg-background px-4">
-      <div className="w-[440px] max-w-full bg-card border border-border rounded-2xl shadow-xl p-8">
+      <div className="w-[440px] max-w-full bg-card border border-border rounded-[5px] shadow-xl p-8">
         <div className="flex flex-col items-center mb-8">
           <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
             <Flame className="w-6 h-6 text-primary" />

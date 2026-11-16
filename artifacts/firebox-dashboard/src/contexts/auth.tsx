@@ -24,8 +24,29 @@ const ME_QUERY_KEY = ['/api/auth/me'] as const;
 
 function extractErrorMessage(error: unknown): string | null {
   if (!error) return null;
-  if (error instanceof Error) return error.message;
-  return 'Something went wrong. Please try again.';
+  return getFriendlyAuthError(error);
+}
+
+export function getFriendlyAuthError(
+  error: unknown,
+  fallback = 'Something went wrong. Please try again.',
+) {
+  const status = (error as any)?.status;
+  const message = error instanceof Error ? error.message : String(error ?? '');
+
+  if (status === 401 || /HTTP 401|Invalid email or password/i.test(message)) {
+    return 'The email or password is incorrect. Please check your details and try again.';
+  }
+  if (status === 409 || /already exists/i.test(message)) {
+    return 'An account with this email already exists. Try signing in instead.';
+  }
+  if (status === 400 && /password/i.test(message)) {
+    return 'Please use a password with at least 8 characters.';
+  }
+  if (/Failed to fetch|NetworkError|network request/i.test(message)) {
+    return 'We could not connect to Firebox. Please check your connection and try again.';
+  }
+  return fallback;
 }
 
 function is401(error: unknown): boolean {
@@ -49,21 +70,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     const result = await loginMutation.mutateAsync({ data: { email, password } });
-    // Seed the /auth/me cache directly so there's no round-trip race,
-    // then invalidate all other queries so they refetch for the new user.
+    // Seed the /auth/me cache directly so there's no round-trip race.
     queryClient.setQueryData(ME_QUERY_KEY, result);
-    await queryClient.invalidateQueries({
-      predicate: (q) => q.queryKey[0] !== ME_QUERY_KEY[0],
-    });
+    // Remove account-scoped data instead of merely marking it stale;
+    // otherwise the previous account can remain visible while queries refetch.
+    queryClient.removeQueries({ predicate: (q) => q.queryKey[0] !== ME_QUERY_KEY[0] });
     return result;
   };
 
   const signUp = async (email: string, password: string, name?: string) => {
     const result = await signupMutation.mutateAsync({ data: { email, password, name } });
     queryClient.setQueryData(ME_QUERY_KEY, result);
-    await queryClient.invalidateQueries({
-      predicate: (q) => q.queryKey[0] !== ME_QUERY_KEY[0],
-    });
+    queryClient.removeQueries({ predicate: (q) => q.queryKey[0] !== ME_QUERY_KEY[0] });
     return result;
   };
 

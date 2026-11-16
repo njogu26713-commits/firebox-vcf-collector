@@ -11,7 +11,7 @@ Add these environment variables in the Vercel project settings for Preview and P
 - `MONGODB_URI`: the MongoDB connection string.
 - `SESSION_SECRET`: a long random value used to sign session cookies.
 - `NODE_ENV`: `production`.
-- `ALLOWED_ORIGINS`: optional; set this only when the API is called from an additional origin, as a comma-separated list.
+- `ALLOWED_ORIGINS`: optional; set this when the API is called from additional origins, as a comma-separated list. The production dashboard origin (`https://vcf.firebox.live`) is already allowlisted by the API.
 
 Vercel supplies the public URL and does not require a manually configured `PORT`.
 

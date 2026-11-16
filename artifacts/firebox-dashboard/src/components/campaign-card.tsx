@@ -67,7 +67,7 @@ export function CampaignCard({ campaign, index = 0 }: { campaign: Campaign; inde
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: index * 0.05 }}
       className={`
-        relative bg-card rounded-[18px] border border-border p-6 flex flex-col gap-5
+        relative bg-card rounded-[5px] border border-border p-6 flex flex-col gap-1
         hover:shadow-lg transition-all duration-300 group
         ${isActive ? 'border-l-[3px] border-l-primary hover:shadow-[0_4px_30px_rgba(22,163,74,0.12)]' : ''}
         ${isCompleted ? 'border-l-[3px] border-l-green-500/50' : ''}

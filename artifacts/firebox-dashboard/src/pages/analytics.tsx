@@ -1,4 +1,4 @@
-import { useGetCampaignAnalytics } from '@workspace/api-client-react';
+import { getGetCampaignAnalyticsQueryKey, useGetCampaignAnalytics } from '@workspace/api-client-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { motion } from 'framer-motion';
 import { 
@@ -13,9 +13,13 @@ import {
   AreaChart,
   Area
 } from 'recharts';
+import { useAuth } from '@/contexts/auth';
 
 export default function Analytics() {
-  const { data: analytics, isLoading } = useGetCampaignAnalytics();
+  const { user } = useAuth();
+  const { data: analytics, isLoading } = useGetCampaignAnalytics({
+    query: { queryKey: [...getGetCampaignAnalyticsQueryKey(), user?.id ?? 'signed-out'] },
+  });
 
   const chartData = analytics?.map(c => ({
     name: c.title.length > 15 ? c.title.substring(0, 15) + '...' : c.title,
@@ -26,7 +30,7 @@ export default function Analytics() {
   })) || [];
 
   return (
-    <div className="space-y-8 pb-10">
+    <div className="space-y-4 pb-10">
       <motion.div 
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
@@ -35,13 +39,13 @@ export default function Analytics() {
         <p className="text-muted-foreground">Track contact collection performance across your campaigns.</p>
       </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-1">
         {/* Contacts Collected Chart */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.1 }}
-          className="bg-card border border-border rounded-[20px] p-6 h-[400px] flex flex-col"
+          className="bg-card border border-border rounded-[5px] p-6 h-[400px] flex flex-col"
         >
           <h3 className="text-lg font-bold text-foreground mb-6">Contacts Collected per Campaign</h3>
           <div className="flex-1 min-h-0 w-full">
@@ -101,7 +105,7 @@ export default function Analytics() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.2 }}
-          className="bg-card border border-border rounded-[20px] p-6 h-[400px] flex flex-col"
+          className="bg-card border border-border rounded-[5px] p-6 h-[400px] flex flex-col"
         >
           <h3 className="text-lg font-bold text-foreground mb-6">Completion Progress (%)</h3>
           <div className="flex-1 min-h-0 w-full">
@@ -170,7 +174,7 @@ export default function Analytics() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.3 }}
-        className="bg-card border border-border rounded-[20px] overflow-hidden"
+        className="bg-card border border-border rounded-[5px] overflow-hidden"
       >
         <div className="p-6 border-b border-border">
           <h3 className="text-lg font-bold text-foreground">Campaign Breakdown</h3>

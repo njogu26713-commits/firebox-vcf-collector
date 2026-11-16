@@ -105,4 +105,48 @@ router.get("/auth/me", requireAuth, async (req, res) => {
   res.json(formatUser(user));
 });
 
+// PATCH /auth/profile
+router.patch("/auth/profile", requireAuth, async (req, res) => {
+  const name = req.body?.name;
+  if (name !== undefined && (typeof name !== "string" || name.trim().length > 100)) {
+    res.status(400).json({ error: "Please enter a name with 100 characters or fewer" });
+    return;
+  }
+  const user = await User.findByIdAndUpdate(
+    (req as any).userId,
+    { name: typeof name === "string" && name.trim() ? name.trim() : null },
+    { new: true },
+  );
+  if (!user) {
+    res.status(401).json({ error: "Your session has expired. Please sign in again." });
+    return;
+  }
+  res.json(formatUser(user));
+});
+
+// POST /auth/password
+router.post("/auth/password", requireAuth, async (req, res) => {
+  const { currentPassword, newPassword } = req.body ?? {};
+  if (typeof currentPassword !== "string" || typeof newPassword !== "string") {
+    res.status(400).json({ error: "Please enter your current and new password" });
+    return;
+  }
+  if (newPassword.length < 8) {
+    res.status(400).json({ error: "Your new password must be at least 8 characters" });
+    return;
+  }
+  if (currentPassword === newPassword) {
+    res.status(400).json({ error: "Your new password must be different from your current password" });
+    return;
+  }
+  const user = await User.findById((req as any).userId);
+  if (!user || !(await bcrypt.compare(currentPassword, user.passwordHash))) {
+    res.status(401).json({ error: "Your current password is not correct" });
+    return;
+  }
+  user.passwordHash = await bcrypt.hash(newPassword, 10);
+  await user.save();
+  res.status(204).end();
+});
+
 export default router;

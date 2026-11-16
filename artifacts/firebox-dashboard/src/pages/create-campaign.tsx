@@ -147,7 +147,7 @@ export default function CreateCampaign() {
         transition={{ duration: 0.4, delay: 0.1 }}
       >
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 bg-card border border-border rounded-[20px] p-6 md:p-8">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 bg-card border border-border rounded-[5px] p-6 md:p-8">
             <div className="space-y-6">
               <FormField
                 control={form.control}

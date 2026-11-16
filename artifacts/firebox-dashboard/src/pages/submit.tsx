@@ -10,6 +10,23 @@ const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, '');
 class CampaignNotFoundError extends Error {}
 class CampaignServiceError extends Error {}
 
+function getFriendlySubmissionError(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error ?? '');
+  if (/already been submitted/i.test(message)) {
+    return 'This phone number has already joined this campaign.';
+  }
+  if (/valid phone|phone is required/i.test(message)) {
+    return 'Please enter a valid phone number.';
+  }
+  if (/consent is required/i.test(message)) {
+    return 'Please confirm that you agree before continuing.';
+  }
+  if (/country|numbers accepted/i.test(message)) {
+    return 'Please use a phone number from the allowed country.';
+  }
+  return 'We could not add your contact right now. Please try again.';
+}
+
 async function fetchCampaignByToken(token: string) {
   let res: Response;
   try {
@@ -87,7 +104,7 @@ export default function SubmitPage() {
     const isServiceError = error instanceof CampaignServiceError;
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-card border border-border rounded-2xl p-8 text-center">
+        <div className="max-w-md w-full bg-card border border-border rounded-[5px] p-8 text-center">
           <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
           <h1 className="text-xl font-bold text-foreground mb-2">
             {isServiceError ? 'Temporarily unavailable' : 'Link not found'}
@@ -107,7 +124,7 @@ export default function SubmitPage() {
     const isCompleted = campaign.status === 'completed';
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-card border border-border rounded-2xl p-8 text-center">
+        <div className="max-w-md w-full bg-card border border-border rounded-[5px] p-8 text-center">
           <CheckCircle2 className={`w-12 h-12 mx-auto mb-4 ${isCompleted ? 'text-primary' : 'text-muted-foreground'}`} />
           <h1 className="text-xl font-bold text-foreground mb-2">
             {isCompleted ? 'Campaign complete!' : 'Not accepting submissions'}
@@ -136,7 +153,7 @@ export default function SubmitPage() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.3 }}
-            className="max-w-md w-full bg-card border border-border rounded-2xl p-8 text-center"
+            className="max-w-md w-full bg-card border border-border rounded-[5px] p-8 text-center"
           >
             <div className="w-16 h-16 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-6">
               <CheckCircle2 className="w-8 h-8 text-primary" />
@@ -195,7 +212,7 @@ export default function SubmitPage() {
             </div>
 
             {/* Progress card */}
-            <div className="bg-card border border-border rounded-2xl p-5 mb-6">
+            <div className="bg-card border border-border rounded-[5px] p-5 mb-6">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Users className="w-4 h-4" />
@@ -218,7 +235,7 @@ export default function SubmitPage() {
             </div>
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="bg-card border border-border rounded-2xl p-6 space-y-5">
+            <form onSubmit={handleSubmit} className="bg-card border border-border rounded-[5px] p-6 space-y-5">
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-foreground" htmlFor="name">
                   Full name
@@ -302,7 +319,7 @@ export default function SubmitPage() {
               {submitMutation.isError && (
                 <div className="flex items-center gap-2 text-destructive text-sm bg-destructive/10 border border-destructive/20 rounded-xl px-4 py-3">
                   <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                  {submitMutation.error?.message ?? 'Something went wrong. Please try again.'}
+                  {getFriendlySubmissionError(submitMutation.error)}
                 </div>
               )}
 

@@ -126,7 +126,7 @@ export default function CampaignContacts() {
           href={campaign.groupLink}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-4 p-4 rounded-2xl border border-green-500/30 bg-green-500/5 hover:bg-green-500/10 transition-colors group"
+          className="flex items-center gap-4 p-4 rounded-[5px] border border-green-500/30 bg-green-500/5 hover:bg-green-500/10 transition-colors group"
         >
           <div className="w-10 h-10 rounded-xl bg-green-500/15 flex items-center justify-center shrink-0">
             {/* WhatsApp icon */}
@@ -144,7 +144,7 @@ export default function CampaignContacts() {
 
       {/* Progress bar */}
       {campaign && !loadingCampaign && (
-        <div className="bg-card rounded-2xl border border-border p-5 space-y-4">
+        <div className="bg-card rounded-[5px] border border-border p-5 space-y-4">
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
               <p className="text-xs text-muted-foreground mb-1">Registered</p>
@@ -179,7 +179,7 @@ export default function CampaignContacts() {
       )}
 
       {/* Contact list */}
-      <div className="bg-card rounded-2xl border border-border overflow-hidden">
+      <div className="bg-card rounded-[5px] border border-border overflow-hidden">
         <div className="flex items-center gap-2.5 px-6 py-4 border-b border-border">
           <Users className="w-4 h-4 text-primary" />
           <h2 className="font-semibold text-foreground">
